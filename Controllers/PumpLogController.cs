@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PumpLogApi.Entities;
+using PumpLogApi.Managers;
 
 namespace PumpLogApi.Controllers
 {
@@ -10,47 +10,36 @@ namespace PumpLogApi.Controllers
     [ApiController]
     public class PumpLogController : ControllerBase
     {
+        private readonly PumpLogManager _pumpLogManager;
+
+        public PumpLogController(PumpLogManager pumpLogManager)
+        {
+            _pumpLogManager = pumpLogManager;
+        }
+
+
         [HttpGet("ActiveSessions")]
         public async Task<ActionResult<IEnumerable<Session>>> GetActiveSessions()
         {
             // This is a placeholder for the actual implementation.
             // You would typically retrieve the active sessions from a database or other data source.
-            var activeSessions = new List<Session>
-            {
-                new Session { SessionGuid = Guid.NewGuid(), SessionNumber = 1, UserGuid = Guid.NewGuid() },
-                new Session { SessionGuid = Guid.NewGuid(), SessionNumber = 2, UserGuid = Guid.NewGuid() }
-            };
-
+            var activeSessions = await _pumpLogManager.GetActiveSessions();
             return Ok(activeSessions);
 
         }
-        // [HttpGet("Session/{sessionGuid}")]
-        // public async Task<ActionResult<Session>> GetSession(Guid sessionGuid)
-        // {
-        // }
 
-        // [HttpPost("CreateSession")]
-        // public async Task<ActionResult<Session>> CreateSession([FromBody] Session session)
-        // {
-        //     if (session == null)
-        //     {
-        //         return BadRequest();
-        //     }
-
-        //     return Ok();
-        // }
-        // [HttpPost("UpdateSession")]
-        // public async Task<ActionResult<Session>> UpdateSession([FromBody] Session session)
-        // {
-        //     if (session == null)
-        //     {
-        //         return BadRequest();
-        //     }
-
-        //     // This is a placeholder for the actual implementation.
-        //     // You would typically update the session in a database or other data source.
-
-        //     return Ok();
-        // }
+        [HttpPost]
+        public async Task<ActionResult<Session>> SaveSession([FromBody] Session session)
+        {
+            var result = await _pumpLogManager.SaveSession(session);
+            return result switch
+            {
+                SaveSessionResult.Created => Ok(new { message = "Session created successfully" }),
+                SaveSessionResult.Updated => Ok(new { message = "Session updated successfully" }),
+                SaveSessionResult.AlreadyExists => Conflict(new { message = "Session already exists" }),
+                SaveSessionResult.Error => StatusCode(500, new { message = "An error occurred while saving the session" }),
+                _ => BadRequest(new { message = "Invalid session data" })
+            };
+        }
     }
 }

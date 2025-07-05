@@ -3,11 +3,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PumpLogApi.Data;
+using PumpLogApi.DipendencyInjection;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+{
+    builder.Services.AddServices();
+    builder.Services.AddManager();
+    builder.Services.AddControllers();
+    builder.Services.AddOpenApi();
+}
+
+
 
 builder.Services.AddDbContextPool<PumpLogDbContext>(opt =>
 opt.UseNpgsql(builder.Configuration.GetConnectionString("SqlConnection")));
