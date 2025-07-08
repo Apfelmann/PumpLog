@@ -41,15 +41,38 @@ namespace PumpLogApi.Managers
 
         public async Task<SaveSessionResult> SaveSession(Session session)
         {
-            var sessionExisting = await _context.Sessions.AnyAsync(x => x.SessionGuid == session.SessionGuid);
-            if (sessionExisting == false)
+            var loadedSession = await _context.Sessions
+            .Include(session => session.Sections)
+            .ThenInclude(section => (section as StrengthSection).StrengthSets)
+            .FirstOrDefaultAsync(x => x.SessionGuid == session.SessionGuid);
+            
+            if (loadedSession == null)
             {
                 _context.Sessions.Add(session);
                 await _context.SaveChangesAsync();
                 return SaveSessionResult.Created;
             }
 
-            // Add Update Session if Session already exist :)
+            _context.Entry(loadedSession).CurrentValues.SetValues(session);
+
+            foreach (var section in session.Sections)
+            {
+                var loadedSection = loadedSession.Sections.FirstOrDefault(s => s.SectionGuid == section.SectionGuid);
+
+                if (loadedSection == null)
+                {
+                    loadedSession.Sections.Add(section);
+                }
+                else
+                {
+                    _context.Entry(loadedSection).CurrentValues.SetValues(section);
+
+
+                    //todo: check for strenghSections and crossfit section if there is a change and save this change then.
+                }
+            }
+
+            await _context.SaveChangesAsync();
             return SaveSessionResult.AlreadyExists;
         }
 
