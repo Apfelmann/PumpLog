@@ -17,7 +17,6 @@ namespace PumpLogApi.Controllers
             _pumpLogManager = pumpLogManager;
         }
 
-
         [HttpGet("ActiveSessions")]
         public async Task<ActionResult<IEnumerable<Session>>> GetActiveSessions()
         {
@@ -25,7 +24,6 @@ namespace PumpLogApi.Controllers
             // You would typically retrieve the active sessions from a database or other data source.
             var activeSessions = await _pumpLogManager.GetActiveSessions();
             return Ok(activeSessions);
-
         }
 
         [HttpPost]
@@ -36,9 +34,14 @@ namespace PumpLogApi.Controllers
             {
                 SaveSessionResult.Created => Ok(new { message = "Session created successfully" }),
                 SaveSessionResult.Updated => Ok(new { message = "Session updated successfully" }),
-                SaveSessionResult.AlreadyExists => Conflict(new { message = "Session already exists" }),
-                SaveSessionResult.Error => StatusCode(500, new { message = "An error occurred while saving the session" }),
-                _ => BadRequest(new { message = "Invalid session data" })
+                SaveSessionResult.AlreadyExists => Conflict(
+                    new { message = "Session already exists" }
+                ),
+                SaveSessionResult.Error => StatusCode(
+                    500,
+                    new { message = "An error occurred while saving the session" }
+                ),
+                _ => BadRequest(new { message = "Invalid session data" }),
             };
         }
     }

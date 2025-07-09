@@ -9,12 +9,12 @@ using PumpLogApi.Entities;
 
 namespace PumpLogApi.Managers
 {
-     public enum SaveSessionResult
+    public enum SaveSessionResult
     {
         Created,
         Updated,
         AlreadyExists,
-        Error
+        Error,
     }
 
     public interface IPumpLogManager
@@ -22,8 +22,6 @@ namespace PumpLogApi.Managers
         Task<List<Session>> GetActiveSessions();
         Task<SaveSessionResult> SaveSession(Session session);
     }
-
-
 
     public class PumpLogManager : IPumpLogManager
     {
@@ -33,19 +31,22 @@ namespace PumpLogApi.Managers
         {
             _context = context;
         }
+
         public async Task<List<Session>> GetActiveSessions()
         {
-            List<Session> activeSessions = await _context.Sessions.Where(x => x.IsActive == true).ToListAsync();
+            List<Session> activeSessions = await _context
+                .Sessions.Where(x => x.IsActive == true)
+                .ToListAsync();
             return activeSessions;
         }
 
         public async Task<SaveSessionResult> SaveSession(Session session)
         {
-            var loadedSession = await _context.Sessions
-            .Include(session => session.Sections)
-            .ThenInclude(section => (section as StrengthSection).StrengthSets)
-            .FirstOrDefaultAsync(x => x.SessionGuid == session.SessionGuid);
-            
+            var loadedSession = await _context
+                .Sessions.Include(session => session.Sections)
+                .ThenInclude(section => (section as StrengthSection).StrengthSets)
+                .FirstOrDefaultAsync(x => x.SessionGuid == session.SessionGuid);
+
             if (loadedSession == null)
             {
                 _context.Sessions.Add(session);
@@ -57,7 +58,9 @@ namespace PumpLogApi.Managers
 
             foreach (var section in session.Sections)
             {
-                var loadedSection = loadedSession.Sections.FirstOrDefault(s => s.SectionGuid == section.SectionGuid);
+                var loadedSection = loadedSession.Sections.FirstOrDefault(s =>
+                    s.SectionGuid == section.SectionGuid
+                );
 
                 if (loadedSection == null)
                 {
@@ -67,14 +70,49 @@ namespace PumpLogApi.Managers
                 {
                     _context.Entry(loadedSection).CurrentValues.SetValues(section);
 
+                    if (
+                        section is StrengthSection strengthSection
+                        && loadedSection is StrengthSection loadedStrengthSection
+                    )
+                    {
+                        foreach (var set in strengthSection.StrengthSets)
+                        {
+                            var loadedSet = loadedStrengthSection.StrengthSets.FirstOrDefault(ss =>
+                                ss.SectionGuid == set.StrengthSetGuid
+                            );
 
-                    //todo: check for strenghSections and crossfit section if there is a change and save this change then.
+                            if (loadedSet == null)
+                            {
+                                loadedStrengthSection.StrengthSets.Add(set);
+                            }
+                            else
+                            {
+                                _context.Entry(loadedSet).CurrentValues.SetValues(set);
+                            }
+                        }
+                        var setsToRemove = loadedStrengthSection
+                            .StrengthSets.Where(ss =>
+                                !strengthSection.StrengthSets.Any(s =>
+                                    s.StrengthSetGuid == ss.StrengthSetGuid
+                                )
+                            )
+                            .ToList();
+
+                        foreach (var setToRemove in setsToRemove)
+                        {
+                            loadedStrengthSection.StrengthSets.Remove(setToRemove);
+                        }
+                    }
                 }
             }
+            var sectionsToRemove = loadedSession
+                .Sections.Where(s => !session.Sections.Any(sec => sec.SectionGuid == s.SectionGuid))
+                .ToList();
+            foreach (var section in sectionsToRemove)
+                loadedSession.Sections.Remove(section);
 
             await _context.SaveChangesAsync();
             return SaveSessionResult.AlreadyExists;
         }
-
     }
 }
