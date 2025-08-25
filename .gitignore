@@ -1,5 +1,20 @@
 .vscode
 .config
 /appsettings.Development.json
-/bin
-/obj
+/PumpLogApi/bin
+/PumpLogApi/obj
+### react ###
+.DS_*
+*.log
+logs
+**/*.backup.*
+**/*.back.*
+
+node_modules
+bower_components
+
+*.sublime*
+
+psd
+thumb
+sketch

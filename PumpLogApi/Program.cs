@@ -25,17 +25,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["Authentication:Issuer"],
-
             ValidateAudience = true,
             ValidAudience = builder.Configuration["Authentication:Audience"],
-
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero, // optional: verhindert 5-Min-Puffer
+            ClockSkew = TimeSpan.Zero,
 
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Authentication:Token"]!))
         };
     });
 builder.Services.AddAuthorization();
@@ -53,10 +48,10 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Create the migration on application startup
-using(var scope = app.Services.CreateScope())
+using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<PumpLogDbContext>();
-    db.Database.Migrate(); 
+    db.Database.Migrate();
 }
 
 

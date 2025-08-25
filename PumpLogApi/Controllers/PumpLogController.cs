@@ -20,10 +20,15 @@ namespace PumpLogApi.Controllers
         [HttpGet("ActiveSessions")]
         public async Task<ActionResult<IEnumerable<Session>>> GetActiveSessions()
         {
-            // This is a placeholder for the actual implementation.
-            // You would typically retrieve the active sessions from a database or other data source.
             var activeSessions = await _pumpLogManager.GetActiveSessions();
             return Ok(activeSessions);
+        }
+
+        [HttpGet("Test")]
+        public async Task<ActionResult<string>> GetTest()
+        {
+            var test = "test";
+            return Ok(test);
         }
 
         [HttpPost]
