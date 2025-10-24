@@ -1,60 +1,28 @@
-import { Button, TextField } from "@mui/material";
-import { useLoginMutation } from "./loginServices";
-import { useState } from "react";
+import { Button, CircularProgress } from "@mui/material";
+import { useCallback, useState } from "react";
+import { startLogin } from "./loginServices";
 
 export const LoginPage = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [login, { data, isLoading, error }] = useLoginMutation();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async () => {
-    try {
-      const result = await login({ username, password }).unwrap();
-      console.log("erfolg", result);
-    } catch (err) {
-      console.error("Login Error: ", err);
-    }
-  };
+  const handleOidcLogin = useCallback(() => {
+    setIsLoading(true);
+    void startLogin().finally(() => setIsLoading(false));
+  }, []);
 
   return (
     <div className="h-screen w-screen flex items-center justify-center">
       <div className="flex flex-col gap-[15px] border border-gray-300 p-6 rounded-lg ">
         <h1>PumpLog</h1>
-        <TextField
-          id="standard-basic"
-          label="UserName"
-          variant="standard"
-          required
+        <p className="text-sm text-gray-400">Melde dich mit deine Konto an.</p>
+        <Button
+          variant="contained"
+          onClick={handleOidcLogin}
           disabled={isLoading}
-          onChange={(e) => setUsername(e.target.value)}
-          sx={{
-            input: { color: "white" },
-            label: { color: "white" },
-          }}
-        />
-        <TextField
-          id="standard-basic"
-          label="Password"
-          variant="standard"
-          required
-          disabled={isLoading}
-          type="password"
-          onChange={(e) => setPassword(e.target.value)}
-          sx={{
-            input: { color: "white" },
-            label: { color: "white" },
-          }}
-        />
-        <div className="flex gap-[10px]">
-          <Button
-            variant="outlined"
-            onClick={handleSubmit}
-            disabled={isLoading}
-          >
-            Login
-          </Button>
-          <Button variant="outlined">Register</Button>
-        </div>
+          endIcon={isLoading ? <CircularProgress size={16} /> : undefined}
+        >
+          Mit Authentik anmelden
+        </Button>
       </div>
     </div>
   );

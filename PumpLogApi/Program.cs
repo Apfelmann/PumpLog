@@ -20,20 +20,21 @@ builder.Services.AddDbContextPool<PumpLogDbContext>(opt =>
 opt.UseNpgsql(builder.Configuration.GetConnectionString("SqlConnection")));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-  .AddJwtBearer(options =>
+    .AddJwtBearer(o =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        o.Authority = builder.Configuration["Authentication:Authority"];
+        o.Audience = builder.Configuration["Authentication:Audience"];
+        o.MapInboundClaims = false;
+        o.IncludeErrorDetails = true;
+
+        o.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidAudience = builder.Configuration["Authentication:Audience"],
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero,
-
-            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.FromSeconds(60),
         };
     });
-builder.Services.AddAuthorization();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
@@ -54,5 +55,9 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
+app.MapGet("/orders", () => Results.Ok(new { ok = true }))
+   .RequireAuthorization("orders.read");
+
 
 app.Run();
+
