@@ -46,6 +46,7 @@ export const SideBarMain = () => {
       <div className="flex h-full flex-col bg-gray-700">
         <div className="flex items-center gap-2 border-b border-slate-800/60 px-4 py-5">
           <IconButton
+            className=" !text-slate-100"
             onClick={() => setIsOpen((prev) => !prev)}
             size="small"
             edge="start"

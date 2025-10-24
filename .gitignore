@@ -3,7 +3,6 @@
 appsettings.Development.json
 /PumpLogApi/bin
 /PumpLogApi/obj
-### react ###
 .DS_*
 *.log
 logs
