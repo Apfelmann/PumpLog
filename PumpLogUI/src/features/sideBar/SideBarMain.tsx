@@ -21,7 +21,7 @@ import { NavLink } from "react-router-dom";
 export const SideBarMain = () => {
   const [isOpen, setIsOpen] = useState(true);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down(1200));
 
   const navItems = [
     { label: "Dashboard", to: "dashboard", icon: Dashboard },
@@ -31,7 +31,7 @@ export const SideBarMain = () => {
 
   const drawerWidth = 230; // expanded width in px
   const collapsedWidth = 60; // collapsed (mini) width in px
-  const mobileHeight = 64; // height of bottom bar on mobile
+  const mobileHeight = 100; // height of bottom bar on mobile
 
   const showLabel = isMobile || isOpen;
   const containerClasses = isMobile

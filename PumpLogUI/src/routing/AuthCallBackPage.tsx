@@ -12,7 +12,7 @@ export function AuthCallbackPage() {
     hasHandled.current = true;
 
     completeLogin()
-      .then(() => navigate("/app", { replace: true }))
+      .then(() => navigate("/app/dashboard", { replace: true }))
       .catch(() => navigate("/login", { replace: true }));
   }, [navigate]);
 
