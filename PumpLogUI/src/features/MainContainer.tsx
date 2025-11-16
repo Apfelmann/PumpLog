@@ -1,10 +1,10 @@
 import { Outlet } from "react-router";
-import { SideBarMain } from "./sideBar/SideBarMain";
+import { MobileNavigationBar } from "./sideBar/MobileNavigationBar";
 
-export const MainContainer = () => {
+export const MobileMainContainer = () => {
   return (
-    <div className="w-screen h-screen">
-      <SideBarMain />
+    <div className="h-full w-full">
+      <MobileNavigationBar />
       <Outlet />
     </div>
   );
