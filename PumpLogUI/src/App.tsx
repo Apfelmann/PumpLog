@@ -6,7 +6,7 @@ import { LoginPage } from "./features/loginPage/LoginPage";
 import { MobileMainContainer } from "./features/MainContainer";
 import { useTheme } from "@mui/material/styles";
 import { useMediaQuery } from "@mui/material";
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
 import { WorkoutsHome } from "./features/workouts/pages/WorkoutsHome";
 
 export default function App() {

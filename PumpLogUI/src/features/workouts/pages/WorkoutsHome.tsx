@@ -7,12 +7,14 @@ import { RepsModal, type RepsModalState } from "../components/RepsModal";
 import { progressWorkout } from "../progression";
 import { Header } from "./Header";
 import { AddWorkoutDialog } from "../components/AddWorkoutDialog/AddWorkoutDialog";
+import { useSaveSessionMutation } from "../../../services/sessionApi";
 
 export const WorkoutsHome = () => {
   const [workouts, setWorkouts] = useState<Workout[]>(() => []);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modal, setModal] = useState<RepsModalState>({ open: false });
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [saveSession] = useSaveSessionMutation();
 
   const toggleExpanded = (id: string) =>
     setExpandedId((current) => (current === id ? null : id));
@@ -66,7 +68,11 @@ export const WorkoutsHome = () => {
   };
 
   const addWorkout = () => {
-    setIsOpen(!isOpen);
+    try {
+      saveSession({});
+    } catch (e) {
+      console.log("Error saving session:", e);
+    }
   };
 
   return (

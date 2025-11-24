@@ -5,9 +5,11 @@ namespace PumpLogApi.Entities
     {
         [Key]
         public required Guid SessionGuid { get; set; }
-        public int SessionNumber { get; set; }
-        public IList<Section> Sections { get; set; } = new List<Section>();
-        public bool IsActive { get; set; } = true;
+        public required int SessionNumber { get; set; }
+        public required bool IsActive { get; set; } = true;
         public required Guid UserGuid { get; set; }
+        public required bool isDeleted {get; set;}
+        public IList<Section>? Sections { get; set; } = new List<Section>();
+        public DateTime creationDate{get; set;}
     }
 }

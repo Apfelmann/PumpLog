@@ -1,17 +1,37 @@
+import { ArrowDropDown } from "@mui/icons-material";
+import { Input, MenuItem, TextField } from "@mui/material";
+import { useState } from "react";
+
 type Props = {
   onClose: () => void;
 };
 
 export const AddWorkoutDialog = ({ onClose }: Props) => {
+  const [workoutType, setWorkoutType] = useState("test");
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-[2px]"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-xl rounded-2xl border border-white/10 bg-[#101014]/95 p-6 shadow-2xl">
-        <div className="mb-4 flex items-center justify-between">
+      <div className="relative z-10 w-11/12   rounded-2xl border border-white/10 bg-[#101014]/95 p-6 shadow-2xl">
+        <div className="mb-4 flex items-center justify-between flex-col ">
           <h2 className="text-xl font-semibold text-white">Neues Workout</h2>
+          <TextField
+            className="text-white"
+            select
+            label="Workout-Typ"
+            value={workoutType}
+            onChange={(event) => setWorkoutType(event.target.value)}
+            helperText="Bitte auswählen"
+          >
+            {["test", "2", "3"].map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
           <button
             type="button"
             className="text-sm font-medium text-white/60 transition hover:text-white"

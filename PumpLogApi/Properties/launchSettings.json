@@ -18,6 +18,22 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    },
+    "frontend": {
+      "commandName": "Executable",
+      "executablePath": "npm",
+      "workingDirectory": "../../PumpLogUI",
+      "commandLineArgs": "run dev -- --host --port 5173",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:5173"
+    },
+    "fullstack": {
+      "commandName": "Executable",
+      "executablePath": "bash",
+      "workingDirectory": "..",
+      "commandLineArgs": "-c \"dotnet watch run & cd ../PumpLogUI && npm run dev -- --host --port 5173\"",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:5173"
     }
   }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PumpLogApi.Data;
@@ -11,9 +12,11 @@ using PumpLogApi.Data;
 namespace PumpLogApi.Migrations
 {
     [DbContext(typeof(PumpLogDbContext))]
-    partial class PumpLogDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251124202818_updatesession")]
+    partial class updatesession
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
