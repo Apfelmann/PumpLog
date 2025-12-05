@@ -19,22 +19,17 @@ export const sessionApi = createApi({
     baseUrl: `${API_BASE_URL}/pumplog`,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).user.session?.accessToken;
-      console.log("Preparing headers for API request");
       if (token) {
-        console.log("Attaching token to request headers", token);
         headers.set("Authorization", `Bearer ${token}`);
       }
       return headers;
     },
   }),
-  tagTypes: ["Session"],
+  tagTypes: ["activesessions"],
   endpoints: (builder) => ({
-    getTest: builder.query<string, void>({
-      query: () => "",
-    }),
     getSessions: builder.query<sessionResponse[], void>({
-      query: () => "/sessions",
-      providesTags: ["Session"],
+      query: () => "/ActiveSessions",
+      providesTags: ["activesessions"],
     }),
     saveSession: builder.mutation<sessionResponse, saveSessionRequest>({
       query: (session) => ({
@@ -42,10 +37,9 @@ export const sessionApi = createApi({
         method: "POST",
         body: session,
       }),
-      invalidatesTags: ["Session"],
+      invalidatesTags: ["activesessions"],
     }),
   }),
 });
 
-export const { useGetTestQuery, useGetSessionsQuery, useSaveSessionMutation } =
-  sessionApi;
+export const { useGetSessionsQuery, useSaveSessionMutation } = sessionApi;

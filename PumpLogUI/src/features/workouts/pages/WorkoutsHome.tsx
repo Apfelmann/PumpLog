@@ -7,7 +7,10 @@ import { RepsModal, type RepsModalState } from "../components/RepsModal";
 import { progressWorkout } from "../progression";
 import { Header } from "./Header";
 import { AddWorkoutDialog } from "../components/AddWorkoutDialog/AddWorkoutDialog";
-import { useSaveSessionMutation } from "../../../services/sessionApi";
+import {
+  useGetSessionsQuery,
+  useSaveSessionMutation,
+} from "../../../services/sessionApi";
 
 export const WorkoutsHome = () => {
   const [workouts, setWorkouts] = useState<Workout[]>(() => []);
@@ -15,6 +18,8 @@ export const WorkoutsHome = () => {
   const [modal, setModal] = useState<RepsModalState>({ open: false });
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [saveSession] = useSaveSessionMutation();
+  const { data } = useGetSessionsQuery();
+  console.log("Fetched sessions data:", data);
 
   const toggleExpanded = (id: string) =>
     setExpandedId((current) => (current === id ? null : id));

@@ -12,8 +12,8 @@ using PumpLogApi.Data;
 namespace PumpLogApi.Migrations
 {
     [DbContext(typeof(PumpLogDbContext))]
-    [Migration("20250625220915_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251205201115_initialMigration")]
+    partial class initialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,11 +61,20 @@ namespace PumpLogApi.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<DateTime?>("CreationDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool?>("IsCompleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("SessionNumber")
+                    b.Property<int?>("SessionNumber")
                         .HasColumnType("integer");
+
+                    b.Property<Guid?>("UserGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool?>("isDeleted")
+                        .HasColumnType("boolean");
 
                     b.HasKey("SessionGuid");
 

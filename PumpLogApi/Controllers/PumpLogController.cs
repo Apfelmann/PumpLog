@@ -10,9 +10,9 @@ namespace PumpLogApi.Controllers
     [ApiController]
     public class PumpLogController : ControllerBase
     {
-        private readonly PumpLogManager _pumpLogManager;
+        private readonly IPumpLogManager _pumpLogManager;
 
-        public PumpLogController(PumpLogManager pumpLogManager)
+        public PumpLogController(IPumpLogManager pumpLogManager)
         {
             _pumpLogManager = pumpLogManager;
         }
@@ -22,13 +22,6 @@ namespace PumpLogApi.Controllers
         {
             var activeSessions = await _pumpLogManager.GetActiveSessions();
             return Ok(activeSessions);
-        }
-
-        [HttpGet("Test")]
-        public async Task<ActionResult<string>> GetTest()
-        {
-            var test = "test";
-            return Ok(test);
         }
 
         [HttpPost]

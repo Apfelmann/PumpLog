@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PumpLogApi.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class initialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,8 +16,11 @@ namespace PumpLogApi.Migrations
                 columns: table => new
                 {
                     SessionGuid = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    SessionNumber = table.Column<int>(type: "integer", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    SessionNumber = table.Column<int>(type: "integer", nullable: true),
+                    IsCompleted = table.Column<bool>(type: "boolean", nullable: true),
+                    UserGuid = table.Column<Guid>(type: "uuid", nullable: true),
+                    isDeleted = table.Column<bool>(type: "boolean", nullable: true),
+                    CreationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {

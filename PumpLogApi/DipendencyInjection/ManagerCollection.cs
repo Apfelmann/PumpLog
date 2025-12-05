@@ -13,6 +13,6 @@ namespace PumpLogApi.DipendencyInjection
             services.AddScoped<IPumpLogManager, PumpLogManager>();
             return services;
         }
-        
+
     }
 }

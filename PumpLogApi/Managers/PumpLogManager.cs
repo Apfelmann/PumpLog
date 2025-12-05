@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PumpLogApi.Data;
 using PumpLogApi.Entities;
+using PumpLogApi.Models;
 
 namespace PumpLogApi.Managers
 {
@@ -23,19 +24,14 @@ namespace PumpLogApi.Managers
         Task<SaveSessionResult> SaveSession(Session session);
     }
 
-    public class PumpLogManager : IPumpLogManager
+    public class PumpLogManager(PumpLogDbContext _context, ICurrentUserService currentUserService) : IPumpLogManager
     {
-        private readonly PumpLogDbContext _context;
 
-        public PumpLogManager(PumpLogDbContext context)
-        {
-            _context = context;
-        }
 
         public async Task<List<Session>> GetActiveSessions()
         {
             List<Session> activeSessions = await _context
-                .Sessions.Where(x => x.IsActive == true)
+                .Sessions.Where(x => x.UserGuid == Guid.Parse(currentUserService.Id) && x.isDeleted == false && x.IsCompleted == false)
                 .ToListAsync();
             return activeSessions;
         }
@@ -47,10 +43,22 @@ namespace PumpLogApi.Managers
                 .ThenInclude(section => (section as StrengthSection).StrengthSets)
                 .FirstOrDefaultAsync(x => x.SessionGuid == session.SessionGuid);
 
+            // If session does not exist, create it
             if (loadedSession == null)
             {
+
+                session.UserGuid = Guid.Parse(currentUserService.Id);
+                session.isDeleted = false;
+                session.IsCompleted = false;
+                session.SessionGuid = Guid.NewGuid();
+                session.SessionNumber = (_context.Sessions
+                    .Where(s => s.UserGuid == Guid.Parse(currentUserService.Id))
+                    .Max(s => (int?)s.SessionNumber) ?? 0) + 1;
+                session.CreationDate = DateTime.UtcNow;
+
                 _context.Sessions.Add(session);
                 await _context.SaveChangesAsync();
+
                 return SaveSessionResult.Created;
             }
 

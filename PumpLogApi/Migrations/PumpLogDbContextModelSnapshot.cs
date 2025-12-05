@@ -58,19 +58,19 @@ namespace PumpLogApi.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("SessionNumber")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("UserGuid")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("creationDate")
+                    b.Property<DateTime?>("CreationDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("isDeleted")
+                    b.Property<bool?>("IsCompleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("SessionNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("UserGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool?>("isDeleted")
                         .HasColumnType("boolean");
 
                     b.HasKey("SessionGuid");
