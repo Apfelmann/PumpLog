@@ -64,60 +64,73 @@ namespace PumpLogApi.Managers
 
             _context.Entry(loadedSession).CurrentValues.SetValues(session);
 
-            foreach (var section in session.Sections)
+            if (session.Title != null)
             {
-                var loadedSection = loadedSession.Sections.FirstOrDefault(s =>
-                    s.SectionGuid == section.SectionGuid
-                );
-
-                if (loadedSection == null)
+                loadedSession.Title = session.Title;
+            }
+            if (session.Sections == null)
+            {
+                session.Sections = new List<Section>();
+            }
+            else
+            {
+                foreach (var section in session.Sections)
                 {
-                    loadedSession.Sections.Add(section);
-                }
-                else
-                {
-                    _context.Entry(loadedSection).CurrentValues.SetValues(section);
+                    var loadedSection = loadedSession.Sections.FirstOrDefault(s =>
+                        s.SectionGuid == section.SectionGuid
+                    );
 
-                    if (
-                        section is StrengthSection strengthSection
-                        && loadedSection is StrengthSection loadedStrengthSection
-                    )
+                    if (loadedSection == null)
                     {
-                        foreach (var set in strengthSection.StrengthSets)
-                        {
-                            var loadedSet = loadedStrengthSection.StrengthSets.FirstOrDefault(ss =>
-                                ss.SectionGuid == set.StrengthSetGuid
-                            );
+                        loadedSession.Sections.Add(section);
+                    }
+                    else
+                    {
+                        _context.Entry(loadedSection).CurrentValues.SetValues(section);
 
-                            if (loadedSet == null)
+                        if (
+                            section is StrengthSection strengthSection
+                            && loadedSection is StrengthSection loadedStrengthSection
+                        )
+                        {
+                            foreach (var set in strengthSection.StrengthSets)
                             {
-                                loadedStrengthSection.StrengthSets.Add(set);
+                                var loadedSet = loadedStrengthSection.StrengthSets.FirstOrDefault(ss =>
+                                    ss.SectionGuid == set.StrengthSetGuid
+                                );
+
+                                if (loadedSet == null)
+                                {
+                                    loadedStrengthSection.StrengthSets.Add(set);
+                                }
+                                else
+                                {
+                                    _context.Entry(loadedSet).CurrentValues.SetValues(set);
+                                }
                             }
-                            else
-                            {
-                                _context.Entry(loadedSet).CurrentValues.SetValues(set);
-                            }
-                        }
-                        var setsToRemove = loadedStrengthSection
-                            .StrengthSets.Where(ss =>
-                                !strengthSection.StrengthSets.Any(s =>
-                                    s.StrengthSetGuid == ss.StrengthSetGuid
+                            var setsToRemove = loadedStrengthSection
+                                .StrengthSets.Where(ss =>
+                                    !strengthSection.StrengthSets.Any(s =>
+                                        s.StrengthSetGuid == ss.StrengthSetGuid
+                                    )
                                 )
-                            )
-                            .ToList();
+                                .ToList();
 
-                        foreach (var setToRemove in setsToRemove)
-                        {
-                            loadedStrengthSection.StrengthSets.Remove(setToRemove);
+                            foreach (var setToRemove in setsToRemove)
+                            {
+                                loadedStrengthSection.StrengthSets.Remove(setToRemove);
+                            }
                         }
                     }
                 }
+
+                var sectionsToRemove = loadedSession
+                    .Sections.Where(s => !session.Sections.Any(sec => sec.SectionGuid == s.SectionGuid))
+                    .ToList();
+                foreach (var section in sectionsToRemove)
+                    loadedSession.Sections.Remove(section);
             }
-            var sectionsToRemove = loadedSession
-                .Sections.Where(s => !session.Sections.Any(sec => sec.SectionGuid == s.SectionGuid))
-                .ToList();
-            foreach (var section in sectionsToRemove)
-                loadedSession.Sections.Remove(section);
+
 
             await _context.SaveChangesAsync();
             return SaveSessionResult.AlreadyExists;

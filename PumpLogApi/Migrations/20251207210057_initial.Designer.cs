@@ -12,8 +12,8 @@ using PumpLogApi.Data;
 namespace PumpLogApi.Migrations
 {
     [DbContext(typeof(PumpLogDbContext))]
-    [Migration("20251205201115_initialMigration")]
-    partial class initialMigration
+    [Migration("20251207210057_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -69,6 +69,9 @@ namespace PumpLogApi.Migrations
 
                     b.Property<int?>("SessionNumber")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
 
                     b.Property<Guid?>("UserGuid")
                         .HasColumnType("uuid");

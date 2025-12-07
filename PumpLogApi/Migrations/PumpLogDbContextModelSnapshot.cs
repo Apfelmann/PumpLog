@@ -67,6 +67,9 @@ namespace PumpLogApi.Migrations
                     b.Property<int?>("SessionNumber")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
                     b.Property<Guid?>("UserGuid")
                         .HasColumnType("uuid");
 

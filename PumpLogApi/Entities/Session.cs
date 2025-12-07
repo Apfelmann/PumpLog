@@ -5,6 +5,7 @@ namespace PumpLogApi.Entities
     public class Session
     {
         [Key]
+        public string? Title { get; set; }
         public Guid? SessionGuid { get; set; }
         public int? SessionNumber { get; set; }
         public bool? IsCompleted { get; set; }

@@ -1,4 +1,4 @@
-export type Exercise = {
+export type Section = {
   id: string;
   kind: "hypertrophy" | "strongmen" | "crossfit";
   name: string;
@@ -10,12 +10,12 @@ export type Exercise = {
   supersetWithNext?: boolean;
 };
 
-export type Workout = {
+export type Session = {
   id: string;
   name: string;
   category: string[]; //upper,lower,etc
   type: string[]; //Crossfit,Strongmen,Hypertropie
   durationMin: number;
   wod?: { title: string; parts: string[]; vest?: boolean };
-  exercises: Exercise[];
+  exercises: Section[];
 };

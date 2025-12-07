@@ -7,6 +7,7 @@ export interface saveSessionRequest {
 }
 
 export interface sessionResponse {
+  title: string;
   sessionGuid: string;
   sessionNumber: number;
   isActive: boolean;
