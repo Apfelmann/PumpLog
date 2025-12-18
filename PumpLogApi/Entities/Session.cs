@@ -6,12 +6,13 @@ namespace PumpLogApi.Entities
     {
         [Key]
         public string? Title { get; set; }
-        public Guid? SessionGuid { get; set; }
-        public int? SessionNumber { get; set; }
+        public required Guid SessionGuid { get; set; }
+        public required int SessionNumber { get; set; }
         public bool? IsCompleted { get; set; }
-        public Guid? UserGuid { get; set; }
-        public bool? isDeleted { get; set; }
+        public required Guid UserGuid { get; set; }
+        public bool? IsDeleted { get; set; }
+        public string? FocusedBodyPart { get; set; }
         public IList<Section>? Sections { get; set; }
-        public DateTime? CreationDate { get; set; }
+        public required DateTime CreationDate { get; set; }
     }
 }

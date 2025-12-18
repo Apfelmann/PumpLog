@@ -29,6 +29,9 @@ namespace PumpLogApi.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
                     b.Property<string>("SectionType")
                         .IsRequired()
                         .HasMaxLength(8)
@@ -36,9 +39,6 @@ namespace PumpLogApi.Migrations
 
                     b.Property<Guid>("SessionGuid")
                         .HasColumnType("uuid");
-
-                    b.Property<int>("order")
-                        .HasColumnType("integer");
 
                     b.HasKey("SectionGuid");
 
@@ -58,23 +58,26 @@ namespace PumpLogApi.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<DateTime?>("CreationDate")
+                    b.Property<DateTime>("CreationDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FocusedBodyPart")
+                        .HasColumnType("text");
 
                     b.Property<bool?>("IsCompleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int?>("SessionNumber")
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("SessionNumber")
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("UserGuid")
+                    b.Property<Guid>("UserGuid")
                         .HasColumnType("uuid");
-
-                    b.Property<bool?>("isDeleted")
-                        .HasColumnType("boolean");
 
                     b.HasKey("SessionGuid");
 

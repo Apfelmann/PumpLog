@@ -22,10 +22,9 @@ export type RepsModalState = {
 type Props = {
   state: RepsModalState;
   onClose: () => void;
-  onSave: (value: number) => void;
 };
 
-export function RepsModal({ state, onClose, onSave }: Props) {
+export function RepsModal({ state, onClose }: Props) {
   const [value, setValue] = useState(state.value ?? state.target ?? 0);
 
   useEffect(() => {
@@ -42,19 +41,29 @@ export function RepsModal({ state, onClose, onSave }: Props) {
       </DialogTitle>
       <DialogContent>
         <div className="flex items-center justify-center gap-4 py-3">
-          <IconButton color="primary" onClick={() => setValue((prev) => Math.max(0, prev - 1))}>
+          <IconButton
+            color="primary"
+            onClick={() => setValue((prev) => Math.max(0, prev - 1))}
+          >
             <RemoveIcon />
           </IconButton>
           <div className="w-16 text-center text-4xl font-semibold text-white">
             {value}
           </div>
-          <IconButton color="primary" onClick={() => setValue((prev) => prev + 1)}>
+          <IconButton
+            color="primary"
+            onClick={() => setValue((prev) => prev + 1)}
+          >
             <AddIcon />
           </IconButton>
         </div>
         <div className="mt-4 grid grid-cols-5 gap-2">
           {[0, 3, 5, 8, 10].map((quick) => (
-            <Button key={quick} variant="outlined" onClick={() => setValue(quick)}>
+            <Button
+              key={quick}
+              variant="outlined"
+              onClick={() => setValue(quick)}
+            >
               {quick}
             </Button>
           ))}
@@ -62,11 +71,7 @@ export function RepsModal({ state, onClose, onSave }: Props) {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button
-          color="success"
-          variant="contained"
-          onClick={() => onSave(Math.max(0, value))}
-        >
+        <Button color="success" variant="contained">
           Speichern
         </Button>
       </DialogActions>

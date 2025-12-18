@@ -21,119 +21,268 @@ namespace PumpLogApi.Managers
     public interface IPumpLogManager
     {
         Task<List<Session>> GetActiveSessions();
-        Task<SaveSessionResult> SaveSession(Session session);
+        Task<SaveSessionResult> SaveSession(SessionRequest session);
     }
 
     public class PumpLogManager(PumpLogDbContext _context, ICurrentUserService currentUserService) : IPumpLogManager
     {
 
+        private static bool IsStrength(SectionRequest section) =>
+            string.Equals(section.SectionType, "Strength", StringComparison.OrdinalIgnoreCase)
+            || section.ExerciseName != null
+            || section.StrengthSets != null;
+
+        private static bool IsCrossfit(SectionRequest section) =>
+            string.Equals(section.SectionType, "Crossfit", StringComparison.OrdinalIgnoreCase)
+            || section.WodName != null
+            || section.Description != null;
+
+        private static Section CreateSectionEntity(SectionRequest sectionRequest, Session session)
+        {
+            var sectionGuid = sectionRequest.SectionGuid ?? Guid.NewGuid();
+            var order = sectionRequest.Order ?? 0;
+
+            if (IsStrength(sectionRequest))
+            {
+                var strengthSection = new StrengthSection
+                {
+                    SectionGuid = sectionGuid,
+                    SessionGuid = session.SessionGuid,
+                    Session = session,
+                    Order = order,
+                    ExerciseName = sectionRequest.ExerciseName ?? string.Empty,
+                    StrengthSets = new List<StrengthSet>(),
+                };
+
+                if (sectionRequest.StrengthSets != null)
+                {
+                    foreach (var setRequest in sectionRequest.StrengthSets)
+                    {
+                        strengthSection.StrengthSets.Add(new StrengthSet
+                        {
+                            StrengthSetGuid = setRequest.StrengthSetGuid ?? Guid.NewGuid(),
+                            SectionGuid = strengthSection.SectionGuid,
+                            StrengthSection = strengthSection,
+                            Weight = setRequest.Weight ?? 0,
+                            Reps = setRequest.Reps ?? 0,
+                            SetNumber = setRequest.SetNumber ?? 0,
+                            IsFinished = setRequest.IsFinished ?? false,
+                        });
+                    }
+                }
+
+                return strengthSection;
+            }
+
+            if (IsCrossfit(sectionRequest))
+            {
+                return new CrossfitSection
+                {
+                    SectionGuid = sectionGuid,
+                    SessionGuid = session.SessionGuid,
+                    Session = session,
+                    Order = order,
+                    WodName = sectionRequest.WodName ?? string.Empty,
+                    Description = sectionRequest.Description ?? string.Empty,
+                };
+            }
+
+            return new Section
+            {
+                SectionGuid = sectionGuid,
+                SessionGuid = session.SessionGuid,
+                Session = session,
+                Order = order,
+            };
+        }
+
 
         public async Task<List<Session>> GetActiveSessions()
         {
             List<Session> activeSessions = await _context
-                .Sessions.Where(x => x.UserGuid == Guid.Parse(currentUserService.Id) && x.isDeleted == false && x.IsCompleted == false)
+                .Sessions.Where(x => x.UserGuid == Guid.Parse(currentUserService.Id) && x.IsDeleted == false && x.IsCompleted == false)
                 .ToListAsync();
             return activeSessions;
         }
 
-        public async Task<SaveSessionResult> SaveSession(Session session)
+        public async Task<SaveSessionResult> SaveSession(SessionRequest request)
         {
+            if (request == null)
+            {
+                return SaveSessionResult.Error;
+            }
+
             var loadedSession = await _context
                 .Sessions.Include(session => session.Sections)
                 .ThenInclude(section => (section as StrengthSection).StrengthSets)
-                .FirstOrDefaultAsync(x => x.SessionGuid == session.SessionGuid);
+                .FirstOrDefaultAsync(x => request.SessionGuid != null && x.SessionGuid == request.SessionGuid);
 
             // If session does not exist, create it
             if (loadedSession == null)
             {
-
-                session.UserGuid = Guid.Parse(currentUserService.Id);
-                session.isDeleted = false;
-                session.IsCompleted = false;
-                session.SessionGuid = Guid.NewGuid();
-                session.SessionNumber = (_context.Sessions
+                var newSession = new Session
+                {
+                    Title = request.Title,
+                    FocusedBodyPart = request.FocusedBodyPart,
+                    Sections = null,
+                    UserGuid = Guid.Parse(currentUserService.Id),
+                    IsDeleted = request.IsDeleted ?? false,
+                    IsCompleted = request.IsCompleted ?? false,
+                    SessionGuid = Guid.NewGuid(),
+                    SessionNumber = (_context.Sessions
                     .Where(s => s.UserGuid == Guid.Parse(currentUserService.Id))
-                    .Max(s => (int?)s.SessionNumber) ?? 0) + 1;
-                session.CreationDate = DateTime.UtcNow;
+                    .Max(s => (int?)s.SessionNumber) ?? 0) + 1
+                    ,
+                    CreationDate = DateTime.UtcNow,
+                };
 
-                _context.Sessions.Add(session);
+                if (request.Sections != null)
+                {
+                    newSession.Sections = new List<Section>();
+                    foreach (var sectionRequest in request.Sections)
+                    {
+                        newSession.Sections.Add(CreateSectionEntity(sectionRequest, newSession));
+                    }
+                }
+
+                _context.Sessions.Add(newSession);
                 await _context.SaveChangesAsync();
 
                 return SaveSessionResult.Created;
             }
 
-            _context.Entry(loadedSession).CurrentValues.SetValues(session);
+            // Patch semantics: only update provided fields
+            if (request.Title != null)
+            {
+                loadedSession.Title = request.Title;
+            }
+            if (request.IsCompleted.HasValue)
+            {
+                loadedSession.IsCompleted = request.IsCompleted.Value;
+            }
+            if (request.IsDeleted.HasValue)
+            {
+                loadedSession.IsDeleted = request.IsDeleted.Value;
+            }
+            if (request.FocusedBodyPart != null)
+            {
+                loadedSession.FocusedBodyPart = request.FocusedBodyPart;
+            }
 
-            if (session.Title != null)
+            // Sections patch: only if client sent sections
+            if (request.Sections != null)
             {
-                loadedSession.Title = session.Title;
-            }
-            if (session.Sections == null)
-            {
-                session.Sections = new List<Section>();
-            }
-            else
-            {
-                foreach (var section in session.Sections)
+                loadedSession.Sections ??= new List<Section>();
+
+                foreach (var sectionRequest in request.Sections)
                 {
-                    var loadedSection = loadedSession.Sections.FirstOrDefault(s =>
-                        s.SectionGuid == section.SectionGuid
-                    );
+                    var incomingGuid = sectionRequest.SectionGuid;
+                    var loadedSection = incomingGuid.HasValue
+                        ? loadedSession.Sections.FirstOrDefault(s => s.SectionGuid == incomingGuid.Value)
+                        : null;
 
                     if (loadedSection == null)
                     {
-                        loadedSession.Sections.Add(section);
+                        loadedSession.Sections.Add(CreateSectionEntity(sectionRequest, loadedSession));
+                        continue;
                     }
-                    else
-                    {
-                        _context.Entry(loadedSection).CurrentValues.SetValues(section);
 
-                        if (
-                            section is StrengthSection strengthSection
-                            && loadedSection is StrengthSection loadedStrengthSection
-                        )
+                    if (sectionRequest.Order.HasValue)
+                    {
+                        loadedSection.Order = sectionRequest.Order.Value;
+                    }
+
+                    if (loadedSection is CrossfitSection loadedCrossfit)
+                    {
+                        if (sectionRequest.WodName != null)
                         {
-                            foreach (var set in strengthSection.StrengthSets)
+                            loadedCrossfit.WodName = sectionRequest.WodName;
+                        }
+                        if (sectionRequest.Description != null)
+                        {
+                            loadedCrossfit.Description = sectionRequest.Description;
+                        }
+                    }
+
+                    if (loadedSection is StrengthSection loadedStrength)
+                    {
+                        if (sectionRequest.ExerciseName != null)
+                        {
+                            loadedStrength.ExerciseName = sectionRequest.ExerciseName;
+                        }
+
+                        if (sectionRequest.StrengthSets != null)
+                        {
+                            foreach (var setRequest in sectionRequest.StrengthSets)
                             {
-                                var loadedSet = loadedStrengthSection.StrengthSets.FirstOrDefault(ss =>
-                                    ss.SectionGuid == set.StrengthSetGuid
-                                );
+                                var setGuid = setRequest.StrengthSetGuid;
+                                var loadedSet = setGuid.HasValue
+                                    ? loadedStrength.StrengthSets.FirstOrDefault(ss => ss.StrengthSetGuid == setGuid.Value)
+                                    : null;
 
                                 if (loadedSet == null)
                                 {
-                                    loadedStrengthSection.StrengthSets.Add(set);
+                                    loadedStrength.StrengthSets.Add(new StrengthSet
+                                    {
+                                        StrengthSetGuid = setRequest.StrengthSetGuid ?? Guid.NewGuid(),
+                                        SectionGuid = loadedStrength.SectionGuid,
+                                        StrengthSection = loadedStrength,
+                                        Weight = setRequest.Weight ?? 0,
+                                        Reps = setRequest.Reps ?? 0,
+                                        SetNumber = setRequest.SetNumber ?? 0,
+                                        IsFinished = setRequest.IsFinished ?? false,
+                                    });
+                                    continue;
                                 }
-                                else
+
+                                if (setRequest.Weight.HasValue)
                                 {
-                                    _context.Entry(loadedSet).CurrentValues.SetValues(set);
+                                    loadedSet.Weight = setRequest.Weight.Value;
+                                }
+                                if (setRequest.Reps.HasValue)
+                                {
+                                    loadedSet.Reps = setRequest.Reps.Value;
+                                }
+                                if (setRequest.SetNumber.HasValue)
+                                {
+                                    loadedSet.SetNumber = setRequest.SetNumber.Value;
+                                }
+                                if (setRequest.IsFinished.HasValue)
+                                {
+                                    loadedSet.IsFinished = setRequest.IsFinished.Value;
                                 }
                             }
-                            var setsToRemove = loadedStrengthSection
-                                .StrengthSets.Where(ss =>
-                                    !strengthSection.StrengthSets.Any(s =>
-                                        s.StrengthSetGuid == ss.StrengthSetGuid
-                                    )
-                                )
+
+                            var incomingSetGuids = sectionRequest.StrengthSets
+                                .Where(s => s.StrengthSetGuid.HasValue)
+                                .Select(s => s.StrengthSetGuid!.Value)
+                                .ToHashSet();
+
+                            var setsToRemove = loadedStrength.StrengthSets
+                                .Where(ss => !incomingSetGuids.Contains(ss.StrengthSetGuid))
                                 .ToList();
 
                             foreach (var setToRemove in setsToRemove)
                             {
-                                loadedStrengthSection.StrengthSets.Remove(setToRemove);
+                                loadedStrength.StrengthSets.Remove(setToRemove);
                             }
                         }
                     }
                 }
 
-                var sectionsToRemove = loadedSession
-                    .Sections.Where(s => !session.Sections.Any(sec => sec.SectionGuid == s.SectionGuid))
+                var sectionsToRemove = loadedSession.Sections
+                    .Where(s => !request.Sections.Any(sec => sec.SectionGuid.HasValue && sec.SectionGuid.Value == s.SectionGuid))
                     .ToList();
+
                 foreach (var section in sectionsToRemove)
+                {
                     loadedSession.Sections.Remove(section);
+                }
             }
 
 
             await _context.SaveChangesAsync();
-            return SaveSessionResult.AlreadyExists;
+            return SaveSessionResult.Updated;
         }
     }
 }

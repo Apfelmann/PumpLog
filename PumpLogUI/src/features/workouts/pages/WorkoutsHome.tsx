@@ -46,13 +46,6 @@ export const WorkoutsHome = () => {
     }
   };
 
-  const saveReps = (value: number) => {
-    if (!(modal.woId && modal.exId && typeof modal.setIdx === "number")) {
-      return;
-    }
-    // TODO: implement save logic here
-  };
-  console.log(expandedId);
   return (
     <div className="min-h-[100dvh] bg-gradient-to-b from-zinc-950 via-[#08080c] to-neutral-900 pb-32 text-white">
       <Header />
@@ -86,11 +79,7 @@ export const WorkoutsHome = () => {
         <AddIcon />
       </Fab>
 
-      <RepsModal
-        state={modal}
-        onClose={() => setModal({ open: false })}
-        onSave={saveReps}
-      />
+      <RepsModal state={modal} onClose={() => setModal({ open: false })} />
       {isOpen && <AddWorkoutDialog onClose={() => setIsOpen(false)} />}
     </div>
   );

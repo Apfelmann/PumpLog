@@ -10,7 +10,8 @@ namespace PumpLogApi.Entities
         public Guid SectionGuid { get; set; }
         public Guid SessionGuid { get; set; }
         public required Session Session { get; set; }
-        public int order { get; set; }
+        public int Order { get; set; }
+
     }
 
     public class CrossfitSection : Section

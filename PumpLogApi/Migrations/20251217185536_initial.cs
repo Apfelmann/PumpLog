@@ -17,11 +17,12 @@ namespace PumpLogApi.Migrations
                 {
                     SessionGuid = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     Title = table.Column<string>(type: "text", nullable: true),
-                    SessionNumber = table.Column<int>(type: "integer", nullable: true),
+                    SessionNumber = table.Column<int>(type: "integer", nullable: false),
                     IsCompleted = table.Column<bool>(type: "boolean", nullable: true),
-                    UserGuid = table.Column<Guid>(type: "uuid", nullable: true),
-                    isDeleted = table.Column<bool>(type: "boolean", nullable: true),
-                    CreationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    UserGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: true),
+                    FocusedBodyPart = table.Column<string>(type: "text", nullable: true),
+                    CreationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -34,7 +35,7 @@ namespace PumpLogApi.Migrations
                 {
                     SectionGuid = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     SessionGuid = table.Column<Guid>(type: "uuid", nullable: false),
-                    order = table.Column<int>(type: "integer", nullable: false),
+                    Order = table.Column<int>(type: "integer", nullable: false),
                     SectionType = table.Column<string>(type: "character varying(8)", maxLength: 8, nullable: false),
                     WodName = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),

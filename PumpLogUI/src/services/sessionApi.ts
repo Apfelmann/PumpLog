@@ -31,14 +31,16 @@ export const sessionApi = createApi({
       query: () => "/ActiveSessions",
       providesTags: ["activesessions"],
     }),
-    saveSession: builder.mutation<sessionResponse, saveSessionRequest>({
-      query: (session) => ({
-        url: "",
-        method: "POST",
-        body: session,
-      }),
-      invalidatesTags: ["activesessions"],
-    }),
+    saveSession: builder.mutation<sessionResponse, Partial<saveSessionRequest>>(
+      {
+        query: (session) => ({
+          url: "",
+          method: "POST",
+          body: session,
+        }),
+        invalidatesTags: ["activesessions"],
+      }
+    ),
   }),
 });
 

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PumpLogApi.Entities;
 using PumpLogApi.Managers;
+using PumpLogApi.Models;
 
 namespace PumpLogApi.Controllers
 {
@@ -25,7 +26,7 @@ namespace PumpLogApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Session>> SaveSession([FromBody] Session session)
+        public async Task<ActionResult<Session>> SaveSession([FromBody] SessionRequest session)
         {
             var result = await _pumpLogManager.SaveSession(session);
             return result switch
