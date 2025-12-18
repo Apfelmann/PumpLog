@@ -4,9 +4,12 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckIcon from "@mui/icons-material/Check";
+import AddIcon from "@mui/icons-material/Add";
 import type { Session } from "../types";
 import { useState } from "react";
 import { useSaveSessionMutation } from "../../../services/sessionApi";
+import { HypertrophySection } from "../HypertrophySection";
+import type { StrengthSection } from "../../../models/section";
 
 type Props = {
   session?: any;
@@ -30,8 +33,40 @@ export const SessionCard = ({
 }: Props) => {
   const [title, setTitle] = useState(session?.title);
   const [saveSession] = useSaveSessionMutation();
+  const [showAddSection, setShowAddSection] = useState(false);
   const Icon = getCategoryIcon(session);
-  const exerciseCount = 0;
+  const exerciseCount = session?.sections?.length || 0;
+
+  const sanitizeSection = (section: any) => {
+    // Remove circular references and ensure clean DTO
+    const { session, ...rest } = section;
+    return rest;
+  };
+
+  const handleSectionUpdate = (updatedSection: StrengthSection) => {
+    const updatedSections = session.sections.map((s: any) =>
+      s.sectionGuid === updatedSection.sectionGuid ? updatedSection : s
+    );
+
+    saveSession({
+      ...session,
+      sections: updatedSections.map(sanitizeSection),
+    });
+  };
+
+  const handleAddSection = (newSectionData: any) => {
+    // Set order to be last
+    const order = (session.sections?.length || 0) + 1;
+    const sectionToAdd = { ...newSectionData, order };
+
+    const newSections = [...(session.sections || []), sectionToAdd];
+
+    saveSession({
+      ...session,
+      sections: newSections.map(sanitizeSection),
+    });
+    setShowAddSection(false);
+  };
 
   return (
     <div className="rounded-[24px] border border-white/10 bg-gradient-to-b from-zinc-800/70 to-neutral-900 px-6 py-5 shadow-xl">
@@ -91,6 +126,36 @@ export const SessionCard = ({
 
       {expanded && (
         <div className="mt-5 space-y-4 border-t border-white/10 pt-5 text-white/90">
+          {session.sections?.map((section: any) => (
+            <HypertrophySection
+              key={section.sectionGuid}
+              section={section}
+              onSave={handleSectionUpdate}
+              onDelete={() => {
+                const newSections = session.sections.filter(
+                  (s: any) => s.sectionGuid !== section.sectionGuid
+                );
+                saveSession({ ...session, sections: newSections });
+              }}
+            />
+          ))}
+
+          {showAddSection ? (
+            <HypertrophySection
+              onSave={handleAddSection}
+              onDelete={() => setShowAddSection(false)}
+            />
+          ) : (
+            <Button
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={() => setShowAddSection(true)}
+              className="!w-full !border-dashed !border-white/20 !text-white/50 hover:!text-white hover:!border-white/40 !py-4"
+            >
+              Übung hinzufügen
+            </Button>
+          )}
+
           <div className="flex flex-wrap gap-3">
             <Button
               variant="contained"

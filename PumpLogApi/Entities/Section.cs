@@ -11,6 +11,7 @@ namespace PumpLogApi.Entities
         public Guid SessionGuid { get; set; }
         public required Session Session { get; set; }
         public int Order { get; set; }
+        public bool SupersetWithNext { get; set; }
 
     }
 

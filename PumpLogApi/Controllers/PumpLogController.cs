@@ -43,5 +43,26 @@ namespace PumpLogApi.Controllers
                 _ => BadRequest(new { message = "Invalid session data" }),
             };
         }
+
+        [HttpGet("Exercises")]
+        public async Task<ActionResult<IEnumerable<Exercise>>> GetExercises()
+        {
+            var exercises = await _pumpLogManager.GetAllExercises();
+            return Ok(exercises);
+        }
+
+        [HttpPost("Exercise")]
+        public async Task<ActionResult<Exercise>> CreateExercise([FromBody] Exercise exercise)
+        {
+            var createdExercise = await _pumpLogManager.CreateExercise(exercise);
+            return CreatedAtAction(nameof(GetExercises), new { id = createdExercise.ExerciseGuid }, createdExercise);
+        }
+
+        [HttpGet("BodyParts")]
+        public async Task<ActionResult<IEnumerable<BodyPart>>> GetBodyParts()
+        {
+            var bodyParts = await _pumpLogManager.GetAllBodyParts();
+            return Ok(bodyParts);
+        }
     }
 }

@@ -11,6 +11,7 @@ export interface Section {
   sessionGuid: string;
   session: Session;
   order: number;
+  supersetWithNext?: boolean;
 }
 
 export interface CrossfitSection extends Section {

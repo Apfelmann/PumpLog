@@ -8,6 +8,7 @@ namespace PumpLogApi.Models
         public Guid? SectionGuid { get; set; }
         public Guid? SessionGuid { get; set; }
         public int? Order { get; set; }
+        public bool? SupersetWithNext { get; set; }
 
         // Optional discriminator aligned with EF discriminator values: "Strength" | "Crossfit"
         public string? SectionType { get; set; }

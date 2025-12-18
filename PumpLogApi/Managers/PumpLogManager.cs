@@ -22,6 +22,9 @@ namespace PumpLogApi.Managers
     {
         Task<List<Session>> GetActiveSessions();
         Task<SaveSessionResult> SaveSession(SessionRequest session);
+        Task<List<Exercise>> GetAllExercises();
+        Task<Exercise> CreateExercise(Exercise exercise);
+        Task<List<BodyPart>> GetAllBodyParts();
     }
 
     public class PumpLogManager(PumpLogDbContext _context, ICurrentUserService currentUserService) : IPumpLogManager
@@ -41,6 +44,7 @@ namespace PumpLogApi.Managers
         {
             var sectionGuid = sectionRequest.SectionGuid ?? Guid.NewGuid();
             var order = sectionRequest.Order ?? 0;
+            var supersetWithNext = sectionRequest.SupersetWithNext ?? false;
 
             if (IsStrength(sectionRequest))
             {
@@ -50,6 +54,7 @@ namespace PumpLogApi.Managers
                     SessionGuid = session.SessionGuid,
                     Session = session,
                     Order = order,
+                    SupersetWithNext = supersetWithNext,
                     ExerciseName = sectionRequest.ExerciseName ?? string.Empty,
                     StrengthSets = new List<StrengthSet>(),
                 };
@@ -283,6 +288,23 @@ namespace PumpLogApi.Managers
 
             await _context.SaveChangesAsync();
             return SaveSessionResult.Updated;
+        }
+
+        public async Task<List<Exercise>> GetAllExercises()
+        {
+            return await _context.Exercises.Include(e => e.BodyPart).ToListAsync();
+        }
+
+        public async Task<Exercise> CreateExercise(Exercise exercise)
+        {
+            _context.Exercises.Add(exercise);
+            await _context.SaveChangesAsync();
+            return exercise;
+        }
+
+        public async Task<List<BodyPart>> GetAllBodyParts()
+        {
+            return await _context.BodyParts.ToListAsync();
         }
     }
 }
