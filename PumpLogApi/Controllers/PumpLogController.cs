@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PumpLogApi.Entities;
 using PumpLogApi.Managers;
+using PumpLogApi.Models;
 
 namespace PumpLogApi.Controllers
 {
@@ -10,9 +11,9 @@ namespace PumpLogApi.Controllers
     [ApiController]
     public class PumpLogController : ControllerBase
     {
-        private readonly PumpLogManager _pumpLogManager;
+        private readonly IPumpLogManager _pumpLogManager;
 
-        public PumpLogController(PumpLogManager pumpLogManager)
+        public PumpLogController(IPumpLogManager pumpLogManager)
         {
             _pumpLogManager = pumpLogManager;
         }
@@ -24,15 +25,8 @@ namespace PumpLogApi.Controllers
             return Ok(activeSessions);
         }
 
-        [HttpGet("Test")]
-        public async Task<ActionResult<string>> GetTest()
-        {
-            var test = "test";
-            return Ok(test);
-        }
-
         [HttpPost]
-        public async Task<ActionResult<Session>> SaveSession([FromBody] Session session)
+        public async Task<ActionResult<Session>> SaveSession([FromBody] SessionRequest session)
         {
             var result = await _pumpLogManager.SaveSession(session);
             return result switch
@@ -48,6 +42,45 @@ namespace PumpLogApi.Controllers
                 ),
                 _ => BadRequest(new { message = "Invalid session data" }),
             };
+        }
+
+        [HttpPost("SaveSection")]
+        public async Task<ActionResult> SaveSection([FromBody] SectionRequest request)
+        {
+            try
+            {
+                var savedSection = await _pumpLogManager.SaveSection(request);
+                return Ok(savedSection);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An error occurred while saving the section" });
+            }
+        }
+
+        [HttpGet("Exercises")]
+        public async Task<ActionResult<IEnumerable<Exercise>>> GetExercises()
+        {
+            var exercises = await _pumpLogManager.GetAllExercises();
+            return Ok(exercises);
+        }
+
+        [HttpPost("Exercise")]
+        public async Task<ActionResult<Exercise>> CreateExercise([FromBody] Exercise exercise)
+        {
+            var createdExercise = await _pumpLogManager.CreateExercise(exercise);
+            return CreatedAtAction(nameof(GetExercises), new { id = createdExercise.ExerciseGuid }, createdExercise);
+        }
+
+        [HttpGet("BodyParts")]
+        public async Task<ActionResult<IEnumerable<BodyPart>>> GetBodyParts()
+        {
+            var bodyParts = await _pumpLogManager.GetAllBodyParts();
+            return Ok(bodyParts);
         }
     }
 }

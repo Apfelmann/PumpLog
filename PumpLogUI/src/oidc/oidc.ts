@@ -1,4 +1,4 @@
-import { UserManager, WebStorageStateStore } from "oidc-client-ts";
+import { UserManager } from "oidc-client-ts";
 import { store } from "../store/store";
 import { clearSession, setSession } from "../store/slice/userSlice";
 

@@ -28,11 +28,6 @@ export async function completeLogout() {
   store.dispatch(clearSession());
 }
 
-userManager.events.addAccessTokenExpiring(() => {
-  store.dispatch(clearSession());
-  void userManager.signinRedirect();
-});
-
 userManager.events.addUserSignedOut(() => {
   store.dispatch(clearSession());
 });

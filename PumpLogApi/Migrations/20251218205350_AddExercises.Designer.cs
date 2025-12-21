@@ -12,8 +12,8 @@ using PumpLogApi.Data;
 namespace PumpLogApi.Migrations
 {
     [DbContext(typeof(PumpLogDbContext))]
-    [Migration("20250625220915_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251218205350_AddExercises")]
+    partial class AddExercises
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,12 +25,112 @@ namespace PumpLogApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("PumpLogApi.Entities.BodyPart", b =>
+                {
+                    b.Property<Guid>("BodyPartGuid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("BodyPartGuid");
+
+                    b.ToTable("BodyParts");
+
+                    b.HasData(
+                        new
+                        {
+                            BodyPartGuid = new Guid("3f8e1a2b-4c5d-6e7f-8a9b-0c1d2e3f4a5b"),
+                            Name = "Brust"
+                        },
+                        new
+                        {
+                            BodyPartGuid = new Guid("9a0b1c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d"),
+                            Name = "Rücken"
+                        },
+                        new
+                        {
+                            BodyPartGuid = new Guid("5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9a0b"),
+                            Name = "Schultern"
+                        },
+                        new
+                        {
+                            BodyPartGuid = new Guid("1c2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f"),
+                            Name = "Bizeps"
+                        },
+                        new
+                        {
+                            BodyPartGuid = new Guid("7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d"),
+                            Name = "Trizeps"
+                        },
+                        new
+                        {
+                            BodyPartGuid = new Guid("3e4f5a6b-7c8d-9e0f-1a2b-3c4d5e6f7a8b"),
+                            Name = "Beine (Quadrizeps)"
+                        },
+                        new
+                        {
+                            BodyPartGuid = new Guid("9c0d1e2f-3a4b-5c6d-7e8f-9a0b1c2d3e4f"),
+                            Name = "Beine (Beuger)"
+                        },
+                        new
+                        {
+                            BodyPartGuid = new Guid("5a6b7c8d-9e0f-1a2b-3c4d-5e6f7a8b9c0d"),
+                            Name = "Waden"
+                        },
+                        new
+                        {
+                            BodyPartGuid = new Guid("1e2f3a4b-5c6d-7e8f-9a0b-1c2d3e4f5a6b"),
+                            Name = "Gesäß"
+                        },
+                        new
+                        {
+                            BodyPartGuid = new Guid("7c8d9e0f-1a2b-3c4d-5e6f-7a8b9c0d1e2f"),
+                            Name = "Bauch"
+                        },
+                        new
+                        {
+                            BodyPartGuid = new Guid("3a4b5c6d-7e8f-9a0b-1c2d-3e4f5a6b7c8d"),
+                            Name = "Nacken"
+                        });
+                });
+
+            modelBuilder.Entity("PumpLogApi.Entities.Exercise", b =>
+                {
+                    b.Property<Guid>("ExerciseGuid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<Guid>("BodyPartGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ExerciseGuid");
+
+                    b.HasIndex("BodyPartGuid");
+
+                    b.ToTable("Exercises");
+                });
+
             modelBuilder.Entity("PumpLogApi.Entities.Section", b =>
                 {
                     b.Property<Guid>("SectionGuid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
 
                     b.Property<string>("SectionType")
                         .IsRequired()
@@ -39,9 +139,6 @@ namespace PumpLogApi.Migrations
 
                     b.Property<Guid>("SessionGuid")
                         .HasColumnType("uuid");
-
-                    b.Property<int>("order")
-                        .HasColumnType("integer");
 
                     b.HasKey("SectionGuid");
 
@@ -61,11 +158,26 @@ namespace PumpLogApi.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FocusedBodyPart")
+                        .HasColumnType("text");
+
+                    b.Property<bool?>("IsCompleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<int>("SessionNumber")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserGuid")
+                        .HasColumnType("uuid");
 
                     b.HasKey("SessionGuid");
 
@@ -125,6 +237,17 @@ namespace PumpLogApi.Migrations
                         .HasColumnType("text");
 
                     b.HasDiscriminator().HasValue("Strength");
+                });
+
+            modelBuilder.Entity("PumpLogApi.Entities.Exercise", b =>
+                {
+                    b.HasOne("PumpLogApi.Entities.BodyPart", "BodyPart")
+                        .WithMany()
+                        .HasForeignKey("BodyPartGuid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BodyPart");
                 });
 
             modelBuilder.Entity("PumpLogApi.Entities.Section", b =>
