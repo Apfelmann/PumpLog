@@ -22,6 +22,7 @@ namespace PumpLogApi.Managers
     {
         Task<List<Session>> GetActiveSessions();
         Task<SaveSessionResult> SaveSession(SessionRequest session);
+        Task<Section> SaveSection(SectionRequest section);
         Task<List<Exercise>> GetAllExercises();
         Task<Exercise> CreateExercise(Exercise exercise);
         Task<List<BodyPart>> GetAllBodyParts();
@@ -31,14 +32,13 @@ namespace PumpLogApi.Managers
     {
 
         private static bool IsStrength(SectionRequest section) =>
-            string.Equals(section.SectionType, "Strength", StringComparison.OrdinalIgnoreCase)
-            || section.ExerciseName != null
-            || section.StrengthSets != null;
+            string.Equals(section.SectionType, "Strength", StringComparison.OrdinalIgnoreCase);
 
         private static bool IsCrossfit(SectionRequest section) =>
-            string.Equals(section.SectionType, "Crossfit", StringComparison.OrdinalIgnoreCase)
-            || section.WodName != null
-            || section.Description != null;
+            string.Equals(section.SectionType, "Crossfit", StringComparison.OrdinalIgnoreCase);
+
+        private static bool IsHypertrophy(SectionRequest section) =>
+            string.Equals(section.SectionType, "Hypertrophy", StringComparison.OrdinalIgnoreCase);
 
         private static Section CreateSectionEntity(SectionRequest sectionRequest, Session session)
         {
@@ -46,9 +46,9 @@ namespace PumpLogApi.Managers
             var order = sectionRequest.Order ?? 0;
             var supersetWithNext = sectionRequest.SupersetWithNext ?? false;
 
-            if (IsStrength(sectionRequest))
+            if (IsHypertrophy(sectionRequest))
             {
-                var strengthSection = new StrengthSection
+                var hypertrophySection = new HypertrophySection
                 {
                     SectionGuid = sectionGuid,
                     SessionGuid = session.SessionGuid,
@@ -56,27 +56,13 @@ namespace PumpLogApi.Managers
                     Order = order,
                     SupersetWithNext = supersetWithNext,
                     ExerciseName = sectionRequest.ExerciseName ?? string.Empty,
-                    StrengthSets = new List<StrengthSet>(),
+                    Weight = sectionRequest.Weight ?? 0,
+                    Reps = sectionRequest.Reps ?? 0,
+                    Sets = sectionRequest.Sets ?? 0,
+                    SetResults = sectionRequest.SetResults ?? string.Empty,
                 };
 
-                if (sectionRequest.StrengthSets != null)
-                {
-                    foreach (var setRequest in sectionRequest.StrengthSets)
-                    {
-                        strengthSection.StrengthSets.Add(new StrengthSet
-                        {
-                            StrengthSetGuid = setRequest.StrengthSetGuid ?? Guid.NewGuid(),
-                            SectionGuid = strengthSection.SectionGuid,
-                            StrengthSection = strengthSection,
-                            Weight = setRequest.Weight ?? 0,
-                            Reps = setRequest.Reps ?? 0,
-                            SetNumber = setRequest.SetNumber ?? 0,
-                            IsFinished = setRequest.IsFinished ?? false,
-                        });
-                    }
-                }
-
-                return strengthSection;
+                return hypertrophySection;
             }
 
             if (IsCrossfit(sectionRequest))
@@ -92,20 +78,77 @@ namespace PumpLogApi.Managers
                 };
             }
 
-            return new Section
+            throw new ArgumentException("Invalid section type");
+        }
+
+
+        public async Task<Section> SaveSection(SectionRequest sectionRequest)
+        {
+            if (sectionRequest == null || sectionRequest.SessionGuid == null)
             {
-                SectionGuid = sectionGuid,
-                SessionGuid = session.SessionGuid,
-                Session = session,
-                Order = order,
-            };
+                throw new ArgumentException("Invalid section request");
+            }
+
+            var session = await _context.Sessions.FirstOrDefaultAsync(s => s.SessionGuid == sectionRequest.SessionGuid);
+            if (session == null)
+            {
+                throw new ArgumentException("Session not found");
+            }
+
+            Section? existingSection = null;
+            if (sectionRequest.SectionGuid.HasValue)
+            {
+                existingSection = await _context.Sections.FirstOrDefaultAsync(s => s.SectionGuid == sectionRequest.SectionGuid);
+            }
+
+            if (existingSection == null)
+            {
+                // Create new section
+                var newSection = CreateSectionEntity(sectionRequest, session);
+                _context.Sections.Add(newSection);
+                await _context.SaveChangesAsync();
+                return newSection;
+            }
+            else
+            {
+                // Update existing section
+                if (sectionRequest.Order.HasValue)
+                {
+                    existingSection.Order = sectionRequest.Order.Value;
+                }
+                if (sectionRequest.SupersetWithNext.HasValue)
+                {
+                    existingSection.SupersetWithNext = sectionRequest.SupersetWithNext.Value;
+                }
+
+                if (existingSection is CrossfitSection loadedCrossfit)
+                {
+                    if (sectionRequest.WodName != null) loadedCrossfit.WodName = sectionRequest.WodName;
+                    if (sectionRequest.Description != null) loadedCrossfit.Description = sectionRequest.Description;
+                }
+
+                if (existingSection is HypertrophySection loadedStrength)
+                {
+                    if (sectionRequest.ExerciseName != null) loadedStrength.ExerciseName = sectionRequest.ExerciseName;
+                    if (sectionRequest.Weight.HasValue) loadedStrength.Weight = sectionRequest.Weight.Value;
+                    if (sectionRequest.Reps.HasValue) loadedStrength.Reps = sectionRequest.Reps.Value;
+                    if (sectionRequest.Sets.HasValue) loadedStrength.Sets = sectionRequest.Sets.Value;
+                    if (sectionRequest.SetResults != null) loadedStrength.SetResults = sectionRequest.SetResults;
+                }
+
+                await _context.SaveChangesAsync();
+                return existingSection;
+            }
         }
 
 
         public async Task<List<Session>> GetActiveSessions()
         {
             List<Session> activeSessions = await _context
-                .Sessions.Where(x => x.UserGuid == Guid.Parse(currentUserService.Id) && x.IsDeleted == false && x.IsCompleted == false)
+                .Sessions
+                .Include(s => s.Sections)
+                .Where(x => x.UserGuid == Guid.Parse(currentUserService.Id) && x.IsDeleted == false && x.IsCompleted == false)
+                .OrderByDescending(s => s.CreationDate)
                 .ToListAsync();
             return activeSessions;
         }
@@ -119,7 +162,6 @@ namespace PumpLogApi.Managers
 
             var loadedSession = await _context
                 .Sessions.Include(session => session.Sections)
-                .ThenInclude(section => (section as StrengthSection).StrengthSets)
                 .FirstOrDefaultAsync(x => request.SessionGuid != null && x.SessionGuid == request.SessionGuid);
 
             // If session does not exist, create it
@@ -209,72 +251,30 @@ namespace PumpLogApi.Managers
                         }
                     }
 
-                    if (loadedSection is StrengthSection loadedStrength)
+                    if (loadedSection is HypertrophySection loadedStrength)
                     {
                         if (sectionRequest.ExerciseName != null)
                         {
                             loadedStrength.ExerciseName = sectionRequest.ExerciseName;
                         }
-
-                        if (sectionRequest.StrengthSets != null)
+                        if (sectionRequest.Weight.HasValue)
                         {
-                            foreach (var setRequest in sectionRequest.StrengthSets)
-                            {
-                                var setGuid = setRequest.StrengthSetGuid;
-                                var loadedSet = setGuid.HasValue
-                                    ? loadedStrength.StrengthSets.FirstOrDefault(ss => ss.StrengthSetGuid == setGuid.Value)
-                                    : null;
-
-                                if (loadedSet == null)
-                                {
-                                    loadedStrength.StrengthSets.Add(new StrengthSet
-                                    {
-                                        StrengthSetGuid = setRequest.StrengthSetGuid ?? Guid.NewGuid(),
-                                        SectionGuid = loadedStrength.SectionGuid,
-                                        StrengthSection = loadedStrength,
-                                        Weight = setRequest.Weight ?? 0,
-                                        Reps = setRequest.Reps ?? 0,
-                                        SetNumber = setRequest.SetNumber ?? 0,
-                                        IsFinished = setRequest.IsFinished ?? false,
-                                    });
-                                    continue;
-                                }
-
-                                if (setRequest.Weight.HasValue)
-                                {
-                                    loadedSet.Weight = setRequest.Weight.Value;
-                                }
-                                if (setRequest.Reps.HasValue)
-                                {
-                                    loadedSet.Reps = setRequest.Reps.Value;
-                                }
-                                if (setRequest.SetNumber.HasValue)
-                                {
-                                    loadedSet.SetNumber = setRequest.SetNumber.Value;
-                                }
-                                if (setRequest.IsFinished.HasValue)
-                                {
-                                    loadedSet.IsFinished = setRequest.IsFinished.Value;
-                                }
-                            }
-
-                            var incomingSetGuids = sectionRequest.StrengthSets
-                                .Where(s => s.StrengthSetGuid.HasValue)
-                                .Select(s => s.StrengthSetGuid!.Value)
-                                .ToHashSet();
-
-                            var setsToRemove = loadedStrength.StrengthSets
-                                .Where(ss => !incomingSetGuids.Contains(ss.StrengthSetGuid))
-                                .ToList();
-
-                            foreach (var setToRemove in setsToRemove)
-                            {
-                                loadedStrength.StrengthSets.Remove(setToRemove);
-                            }
+                            loadedStrength.Weight = sectionRequest.Weight.Value;
+                        }
+                        if (sectionRequest.Reps.HasValue)
+                        {
+                            loadedStrength.Reps = sectionRequest.Reps.Value;
+                        }
+                        if (sectionRequest.Sets.HasValue)
+                        {
+                            loadedStrength.Sets = sectionRequest.Sets.Value;
+                        }
+                        if (sectionRequest.SetResults != null)
+                        {
+                            loadedStrength.SetResults = sectionRequest.SetResults;
                         }
                     }
                 }
-
                 var sectionsToRemove = loadedSession.Sections
                     .Where(s => !request.Sections.Any(sec => sec.SectionGuid.HasValue && sec.SectionGuid.Value == s.SectionGuid))
                     .ToList();

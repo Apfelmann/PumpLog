@@ -7,7 +7,6 @@ public class PumpLogDbContext : DbContext
 {
     public DbSet<Session> Sessions { get; set; }
     public DbSet<Section> Sections { get; set; }
-    public DbSet<StrengthSet> StrengthSets { get; set; }
     public DbSet<BodyPart> BodyParts { get; set; }
     public DbSet<Exercise> Exercises { get; set; }
 
@@ -28,7 +27,7 @@ public class PumpLogDbContext : DbContext
         {
             entity.ToTable("Sections");
             entity.HasDiscriminator<string>("SectionType")
-                .HasValue<StrengthSection>("Strength")
+                .HasValue<HypertrophySection>("Strength")
                 .HasValue<CrossfitSection>("Crossfit");
             entity.HasKey(section => section.SectionGuid);
             entity.Property(section => section.SectionGuid).HasDefaultValueSql("gen_random_uuid()");
@@ -38,18 +37,6 @@ public class PumpLogDbContext : DbContext
                      .HasForeignKey(s => s.SessionGuid)
                      .OnDelete(DeleteBehavior.Cascade);
         });
-
-        modelBuilder.Entity<StrengthSet>(entity =>
-         {
-             entity.HasKey(strengthSet => strengthSet.StrengthSetGuid);
-             entity.Property(strengthSet => strengthSet.StrengthSetGuid)
-                   .HasDefaultValueSql("gen_random_uuid()");
-
-             entity.HasOne(strengthSet => strengthSet.StrengthSection)
-                   .WithMany(section => section.StrengthSets)
-                   .HasForeignKey(strengthSet => strengthSet.SectionGuid)
-                   .OnDelete(DeleteBehavior.Cascade);
-         });
 
         modelBuilder.Entity<BodyPart>(entity =>
         {

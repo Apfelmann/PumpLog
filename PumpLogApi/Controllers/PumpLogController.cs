@@ -44,6 +44,24 @@ namespace PumpLogApi.Controllers
             };
         }
 
+        [HttpPost("SaveSection")]
+        public async Task<ActionResult> SaveSection([FromBody] SectionRequest request)
+        {
+            try
+            {
+                var savedSection = await _pumpLogManager.SaveSection(request);
+                return Ok(savedSection);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An error occurred while saving the section" });
+            }
+        }
+
         [HttpGet("Exercises")]
         public async Task<ActionResult<IEnumerable<Exercise>>> GetExercises()
         {

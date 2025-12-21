@@ -7,12 +7,12 @@ interface ExerciseInputProps {
   exercises: Exercise[];
   selectedExercise: Exercise | null;
   onExerciseChange: (exercise: Exercise | null) => void;
-  weight: string;
-  onWeightChange: (value: string) => void;
-  sets: string;
-  onSetsChange: (value: string) => void;
-  reps: string;
-  onRepsChange: (value: string) => void;
+  weight: number;
+  onWeightChange: (value: number) => void;
+  sets: number;
+  onSetsChange: (value: number) => void;
+  reps: number;
+  onRepsChange: (value: number) => void;
   isLoading: boolean;
   label?: string;
 }
@@ -154,7 +154,7 @@ export const ExerciseInput: React.FC<ExerciseInputProps> = ({
           label="Gewicht (kg)"
           type="number"
           value={weight}
-          onChange={(e) => onWeightChange(e.target.value)}
+          onChange={(e) => onWeightChange(Number(e.target.value))}
           variant="outlined"
           size="small"
           sx={{
@@ -173,7 +173,7 @@ export const ExerciseInput: React.FC<ExerciseInputProps> = ({
           label="Sätze"
           type="number"
           value={sets}
-          onChange={(e) => onSetsChange(e.target.value)}
+          onChange={(e) => onSetsChange(Number(e.target.value))}
           variant="outlined"
           size="small"
           sx={{
@@ -192,7 +192,7 @@ export const ExerciseInput: React.FC<ExerciseInputProps> = ({
           label="Reps"
           type="number"
           value={reps}
-          onChange={(e) => onRepsChange(e.target.value)}
+          onChange={(e) => onRepsChange(Number(e.target.value))}
           variant="outlined"
           size="small"
           sx={{

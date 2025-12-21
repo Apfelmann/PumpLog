@@ -7,11 +7,13 @@ export interface Session {
 }
 
 export interface Section {
-  sectionGuid: string;
+  sectionGuid: string | undefined;
   sessionGuid: string;
   session: Session;
   order: number;
+  bodyPartGuid?: string;
   supersetWithNext?: boolean;
+  sectionType: "Strength" | "Crossfit" | "Hypertrophy";
 }
 
 export interface CrossfitSection extends Section {
@@ -19,14 +21,10 @@ export interface CrossfitSection extends Section {
   description: string;
 }
 
-export interface StrengthSet {
-  reps?: number;
-  weight?: number;
-  order?: number;
-  notes?: string;
-}
-
-export interface StrengthSection extends Section {
+export interface HypertrophySection extends Section {
   exerciseName: string;
-  strengthSets: StrengthSet[];
+  weight: number;
+  reps: number;
+  sets: number;
+  setResults: string;
 }

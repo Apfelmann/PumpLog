@@ -3,6 +3,7 @@ import type {
   saveSessionRequest,
   sessionResponse,
 } from "../models/saveSession";
+import type { Section } from "../models/section";
 import type { RootState } from "../store/store";
 import { API_BASE_URL } from "../constants";
 
@@ -34,7 +35,19 @@ export const sessionApi = createApi({
         invalidatesTags: ["activesessions"],
       }
     ),
+    saveSection: builder.mutation<Section, Partial<Section>>({
+      query: (section) => ({
+        url: "/SaveSection",
+        method: "POST",
+        body: section,
+      }),
+      invalidatesTags: ["activesessions"],
+    }),
   }),
 });
 
-export const { useGetSessionsQuery, useSaveSessionMutation } = sessionApi;
+export const {
+  useGetSessionsQuery,
+  useSaveSessionMutation,
+  useSaveSectionMutation,
+} = sessionApi;

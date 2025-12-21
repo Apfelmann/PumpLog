@@ -8,17 +8,19 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SaveIcon from "@mui/icons-material/Save";
 import { useGetExercisesQuery } from "../../services/exerciseApi";
 import type { Exercise } from "../../models/exercise";
-import type { StrengthSection } from "../../models/section";
 import { ExerciseInput } from "./components/ExerciseInput";
+import type { HypertrophySection, Session } from "../../models/section";
 
 interface HypertrophySectionProps {
-  section?: StrengthSection;
-  onSave?: (sectionData: any) => void;
+  section?: HypertrophySection;
+  sessionGuid: string;
+  onSave?: (sectionData: Omit<HypertrophySection, "session">) => void;
   onDelete?: () => void;
 }
 
-export const HypertrophySection: React.FC<HypertrophySectionProps> = ({
+export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
   section,
+  sessionGuid,
   onSave,
   onDelete,
 }) => {
@@ -28,9 +30,9 @@ export const HypertrophySection: React.FC<HypertrophySectionProps> = ({
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
     null
   );
-  const [weight, setWeight] = useState<string>("");
-  const [sets, setSets] = useState<string>("");
-  const [reps, setReps] = useState<string>("");
+  const [weight, setWeight] = useState<number>(section?.weight || 0);
+  const [sets, setSets] = useState<number>(section?.sets || 0);
+  const [reps, setReps] = useState<number>(section?.reps || 0);
   const [isSuperset, setIsSuperset] = useState(false);
 
   // Results state: { [setIndex]: repsAchieved }
@@ -47,59 +49,34 @@ export const HypertrophySection: React.FC<HypertrophySectionProps> = ({
     targetReps: number;
   } | null>(null);
 
-  // Initialize from section prop
-  useEffect(() => {
-    if (section) {
-      const exercise = exercises.find((e) => e.name === section.exerciseName);
-      if (exercise) setSelectedExercise(exercise);
-      else if (section.exerciseName)
-        setSelectedExercise({ name: section.exerciseName } as Exercise);
-
-      setIsSuperset(section.supersetWithNext || false);
-
-      if (section.strengthSets && section.strengthSets.length > 0) {
-        const firstSet = section.strengthSets[0];
-        setWeight(firstSet.weight?.toString() || "");
-        setSets(section.strengthSets.length.toString());
-        setReps(firstSet.reps?.toString() || "");
-
-        const results: Record<number, number> = {};
-        section.strengthSets.forEach((s, idx) => {
-          if (s.reps !== undefined) {
-            results[idx] = s.reps;
-          }
-        });
-        setMainSetResults(results);
-      }
-    }
-  }, [section, exercises]);
-
   const handleSave = () => {
     if (!selectedExercise || !onSave) return;
 
-    const targetSets = parseInt(sets) || 0;
-    const targetRepsVal = parseInt(reps) || 0;
-    const weightVal = parseFloat(weight) || 0;
+    const targetSets = sets;
+    const targetRepsVal = reps;
+    const weightVal = weight;
 
-    const strengthSets: any[] = [];
-
+    const resultArray: string[] = [];
     for (let i = 0; i < targetSets; i++) {
-      const isFinished = mainSetResults[i] !== undefined;
-      strengthSets.push({
-        setNumber: i + 1,
-        weight: weightVal,
-        reps: isFinished ? mainSetResults[i] : targetRepsVal,
-        isFinished: isFinished,
-      });
+      if (mainSetResults[i] !== undefined) {
+        resultArray.push(mainSetResults[i].toString());
+      } else {
+        resultArray.push("0");
+      }
     }
+    const setResultsString = resultArray.join(",");
 
-    const sectionData = {
-      sectionGuid: section?.sectionGuid,
-      sectionType: "Strength",
-      exerciseName: selectedExercise.name,
+    const sectionData: Omit<HypertrophySection, "session"> = {
+      sectionGuid: section?.sectionGuid || undefined,
+      sessionGuid: sessionGuid,
       order: section?.order || 0,
+      sectionType: "Hypertrophy",
+      exerciseName: selectedExercise.name,
       supersetWithNext: isSuperset,
-      strengthSets: strengthSets,
+      weight: weightVal,
+      reps: targetRepsVal,
+      sets: targetSets,
+      setResults: setResultsString,
     };
 
     onSave(sectionData);
@@ -109,9 +86,8 @@ export const HypertrophySection: React.FC<HypertrophySectionProps> = ({
   const handleSetClick = (
     e: React.MouseEvent<HTMLDivElement>,
     index: number,
-    targetRepsStr: string
+    targetReps: number
   ) => {
-    const targetReps = parseInt(targetRepsStr) || 0;
     const val = mainSetResults[index];
 
     if (val === undefined) {
@@ -141,13 +117,10 @@ export const HypertrophySection: React.FC<HypertrophySectionProps> = ({
   };
 
   const renderSetBubbles = (
-    countStr: string,
+    count: number,
     results: Record<number, number>,
-    targetRepsStr: string
+    targetReps: number
   ) => {
-    const count = parseInt(countStr) || 0;
-    const targetReps = parseInt(targetRepsStr) || 0;
-
     return Array.from({ length: count }).map((_, idx) => {
       const actualReps = results[idx];
       const isCompleted = actualReps !== undefined;
@@ -156,7 +129,7 @@ export const HypertrophySection: React.FC<HypertrophySectionProps> = ({
       return (
         <div
           key={idx}
-          onClick={(e) => handleSetClick(e, idx, targetRepsStr)}
+          onClick={(e) => handleSetClick(e, idx, targetReps)}
           className={`
             w-9 h-9 rounded-full flex items-center justify-center cursor-pointer border transition-all select-none text-sm font-medium
             ${

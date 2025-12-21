@@ -1,27 +1,22 @@
-import { Button, IconButton, Input, TextField } from "@mui/material";
+import { Button, IconButton, Input } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
-import CloseIcon from "@mui/icons-material/Close";
-import CheckIcon from "@mui/icons-material/Check";
 import AddIcon from "@mui/icons-material/Add";
-import type { Session } from "../types";
 import { useState } from "react";
-import { useSaveSessionMutation } from "../../../services/sessionApi";
-import { HypertrophySection } from "../HypertrophySection";
-import type { StrengthSection } from "../../../models/section";
+import {
+  useSaveSectionMutation,
+  useSaveSessionMutation,
+} from "../../../services/sessionApi";
+import { HypertrophySectionCard } from "../HypertrophySection";
+import type { Session, HypertrophySection } from "../../../models/section";
+import { useDispatch } from "react-redux";
 
 type Props = {
   session?: any;
   expanded: boolean;
   onToggle: (id: string) => void;
   onComplete: (id: string) => void;
-  onOpenReps: (
-    exId: string,
-    setIdx: number,
-    target: number,
-    current: number | null
-  ) => void;
 };
 
 export const SessionCard = ({
@@ -29,42 +24,17 @@ export const SessionCard = ({
   expanded,
   onToggle,
   onComplete,
-  onOpenReps,
 }: Props) => {
-  const [title, setTitle] = useState(session?.title);
-  const [saveSession] = useSaveSessionMutation();
+  const [saveSection] = useSaveSectionMutation();
   const [showAddSection, setShowAddSection] = useState(false);
   const Icon = getCategoryIcon(session);
   const exerciseCount = session?.sections?.length || 0;
 
-  const sanitizeSection = (section: any) => {
-    // Remove circular references and ensure clean DTO
-    const { session, ...rest } = section;
-    return rest;
-  };
+  const handleSectionUpdate = async (
+    updatedSection: Omit<HypertrophySection, "session">
+  ) => {
+    await saveSection(updatedSection).unwrap();
 
-  const handleSectionUpdate = (updatedSection: StrengthSection) => {
-    const updatedSections = session.sections.map((s: any) =>
-      s.sectionGuid === updatedSection.sectionGuid ? updatedSection : s
-    );
-
-    saveSession({
-      ...session,
-      sections: updatedSections.map(sanitizeSection),
-    });
-  };
-
-  const handleAddSection = (newSectionData: any) => {
-    // Set order to be last
-    const order = (session.sections?.length || 0) + 1;
-    const sectionToAdd = { ...newSectionData, order };
-
-    const newSections = [...(session.sections || []), sectionToAdd];
-
-    saveSession({
-      ...session,
-      sections: newSections.map(sanitizeSection),
-    });
     setShowAddSection(false);
   };
 
@@ -87,27 +57,11 @@ export const SessionCard = ({
                   marginRight: "8px",
                 }}
                 onChange={(e) => {
-                  setTitle(e.target.value);
+                  // Handle title change
                 }}
-                defaultValue={title || "Title einfügen"}
-                value={title}
+                defaultValue={session?.title || "Title einfügen"}
+                value={session?.title}
               />
-              {session.title !== title && (
-                <>
-                  <IconButton
-                    color="success"
-                    onClick={() => saveSession({ ...session, title })}
-                  >
-                    <CheckIcon />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => setTitle(session.title || "Title einfügen")}
-                  >
-                    <CloseIcon />
-                  </IconButton>
-                </>
-              )}
             </div>
             <div className="text-sm text-white/70">
               <div></div>
@@ -127,22 +81,21 @@ export const SessionCard = ({
       {expanded && (
         <div className="mt-5 space-y-4 border-t border-white/10 pt-5 text-white/90">
           {session.sections?.map((section: any) => (
-            <HypertrophySection
+            <HypertrophySectionCard
               key={section.sectionGuid}
               section={section}
+              sessionGuid={session.sessionGuid}
               onSave={handleSectionUpdate}
               onDelete={() => {
-                const newSections = session.sections.filter(
-                  (s: any) => s.sectionGuid !== section.sectionGuid
-                );
-                saveSession({ ...session, sections: newSections });
+                // Remove section from session
               }}
             />
           ))}
 
           {showAddSection ? (
-            <HypertrophySection
-              onSave={handleAddSection}
+            <HypertrophySectionCard
+              sessionGuid={session.sessionGuid}
+              onSave={handleSectionUpdate}
               onDelete={() => setShowAddSection(false)}
             />
           ) : (
@@ -164,13 +117,6 @@ export const SessionCard = ({
             >
               Workout abschließen
             </Button>
-            <Button
-              variant="outlined"
-              className="!rounded-2xl"
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            >
-              Nach oben
-            </Button>
           </div>
         </div>
       )}
@@ -179,16 +125,5 @@ export const SessionCard = ({
 };
 
 function getCategoryIcon(workout?: Session) {
-  switch (workout?.category) {
-    // case "legs":
-    //   return DirectionsRunIcon;
-    // case "cardio":
-    //   return FavoriteBorderIcon;
-    // case "crossfit":
-    //   return FlashOnIcon;
-    // case "strongmen":
-    //   return SportsKabaddiIcon;
-    default:
-      return FitnessCenterIcon;
-  }
+  return FitnessCenterIcon;
 }
