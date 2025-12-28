@@ -19,6 +19,7 @@ namespace PumpLogApi.Models
 
         // Strength
         public string? ExerciseName { get; set; }
+        public Guid? ExerciseGuid { get; set; }
         public decimal? Weight { get; set; }
         public int? Reps { get; set; }
         public int? Sets { get; set; }

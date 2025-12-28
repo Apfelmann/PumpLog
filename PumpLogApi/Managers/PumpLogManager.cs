@@ -55,6 +55,7 @@ namespace PumpLogApi.Managers
                     Session = session,
                     Order = order,
                     SupersetWithNext = supersetWithNext,
+                    ExerciseGuid = sectionRequest.ExerciseGuid ?? Guid.Empty,
                     ExerciseName = sectionRequest.ExerciseName ?? string.Empty,
                     Weight = sectionRequest.Weight ?? 0,
                     Reps = sectionRequest.Reps ?? 0,
@@ -73,6 +74,7 @@ namespace PumpLogApi.Managers
                     SessionGuid = session.SessionGuid,
                     Session = session,
                     Order = order,
+                    ExerciseGuid = sectionRequest.ExerciseGuid ?? Guid.Empty,
                     WodName = sectionRequest.WodName ?? string.Empty,
                     Description = sectionRequest.Description ?? string.Empty,
                 };
@@ -119,6 +121,10 @@ namespace PumpLogApi.Managers
                 if (sectionRequest.SupersetWithNext.HasValue)
                 {
                     existingSection.SupersetWithNext = sectionRequest.SupersetWithNext.Value;
+                }
+                if (sectionRequest.ExerciseGuid.HasValue)
+                {
+                    existingSection.ExerciseGuid = sectionRequest.ExerciseGuid.Value;
                 }
 
                 if (existingSection is CrossfitSection loadedCrossfit)
@@ -237,6 +243,10 @@ namespace PumpLogApi.Managers
                     if (sectionRequest.Order.HasValue)
                     {
                         loadedSection.Order = sectionRequest.Order.Value;
+                    }
+                    if (sectionRequest.ExerciseGuid.HasValue)
+                    {
+                        loadedSection.ExerciseGuid = sectionRequest.ExerciseGuid.Value;
                     }
 
                     if (loadedSection is CrossfitSection loadedCrossfit)

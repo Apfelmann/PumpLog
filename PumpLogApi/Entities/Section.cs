@@ -15,6 +15,7 @@ namespace PumpLogApi.Entities
         public Guid SessionGuid { get; set; }
         [JsonIgnore]
         public Session? Session { get; set; }
+        public required Guid ExerciseGuid { get; set; }
         public int Order { get; set; }
         public bool SupersetWithNext { get; set; }
 

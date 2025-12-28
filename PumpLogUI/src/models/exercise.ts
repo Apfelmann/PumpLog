@@ -5,6 +5,7 @@ export interface BodyPart {
 
 export interface Exercise {
   exerciseGuid: string;
+  exerciseName: string;
   name: string;
   description?: string;
   bodyPartGuid: string;

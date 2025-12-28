@@ -4,7 +4,6 @@ import { Fab } from "@mui/material";
 import { SessionCard } from "../components/SessionCard";
 import { RepsModal, type RepsModalState } from "../components/RepsModal";
 import { Header } from "./Header";
-import { AddWorkoutDialog } from "../components/AddWorkoutDialog/AddWorkoutDialog";
 import {
   useGetSessionsQuery,
   useSaveSessionMutation,
@@ -13,7 +12,6 @@ import {
 export const WorkoutsHome = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modal, setModal] = useState<RepsModalState>({ open: false });
-  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [saveSession] = useSaveSessionMutation();
 
   const { data: sessions = [], isLoading, isError } = useGetSessionsQuery();
@@ -59,7 +57,6 @@ export const WorkoutsHome = () => {
                 expanded={expandedId === session.sessionGuid}
                 onToggle={() => toggleExpanded(session.sessionGuid)}
                 onComplete={() => {}}
-                onOpenReps={() => {}}
               />
             ))}
           </div>
@@ -80,7 +77,6 @@ export const WorkoutsHome = () => {
       </Fab>
 
       <RepsModal state={modal} onClose={() => setModal({ open: false })} />
-      {isOpen && <AddWorkoutDialog onClose={() => setIsOpen(false)} />}
     </div>
   );
 };

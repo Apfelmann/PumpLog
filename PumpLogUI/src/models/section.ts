@@ -9,6 +9,7 @@ export interface Session {
 export interface Section {
   sectionGuid: string | undefined;
   sessionGuid: string;
+  exerciseGuid: string;
   session: Session;
   order: number;
   bodyPartGuid?: string;

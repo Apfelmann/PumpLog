@@ -33,11 +33,33 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
   const [weight, setWeight] = useState<number>(section?.weight || 0);
   const [sets, setSets] = useState<number>(section?.sets || 0);
   const [reps, setReps] = useState<number>(section?.reps || 0);
-  const [isSuperset, setIsSuperset] = useState(false);
+  const [isSuperset, setIsSuperset] = useState(
+    section?.supersetWithNext || false
+  );
+
+  useEffect(() => {
+    if (section && exercises.length > 0) {
+      const found = exercises.find(
+        (e) => e.exerciseGuid === section.exerciseGuid
+      );
+      if (found) {
+        setSelectedExercise(found);
+      }
+    }
+  }, [section, exercises]);
 
   // Results state: { [setIndex]: repsAchieved }
   const [mainSetResults, setMainSetResults] = useState<Record<number, number>>(
-    {}
+    () => {
+      if (!section?.setResults) return {};
+      return section.setResults.split(",").reduce((acc, val, idx) => {
+        const num = parseInt(val, 10);
+        if (!isNaN(num)) {
+          acc[idx] = num;
+        }
+        return acc;
+      }, {} as Record<number, number>);
+    }
   );
 
   // Popover state for adjusting reps
@@ -71,6 +93,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
       sessionGuid: sessionGuid,
       order: section?.order || 0,
       sectionType: "Hypertrophy",
+      exerciseGuid: selectedExercise.exerciseGuid,
       exerciseName: selectedExercise.name,
       supersetWithNext: isSuperset,
       weight: weightVal,
@@ -278,17 +301,6 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
             <div className="flex gap-3">
               {renderSetBubbles(sets, mainSetResults, reps)}
             </div>
-          </div>
-
-          <div className="flex justify-end mt-2">
-            <Button
-              variant="contained"
-              startIcon={<SaveIcon />}
-              onClick={handleSave}
-              className="!bg-amber-300 !text-black hover:!bg-amber-400 !font-semibold"
-            >
-              Speichern
-            </Button>
           </div>
         </div>
       )}
