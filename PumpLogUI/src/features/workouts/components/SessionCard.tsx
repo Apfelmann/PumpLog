@@ -3,7 +3,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import AddIcon from "@mui/icons-material/Add";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useSaveSectionMutation,
   useSaveSessionMutation,
@@ -11,7 +11,6 @@ import {
 } from "../../../services/sessionApi";
 import { HypertrophySectionCard } from "../HypertrophySection";
 import type { Session, HypertrophySection } from "../../../models/section";
-import { useDispatch } from "react-redux";
 
 type Props = {
   session?: any;
@@ -27,10 +26,17 @@ export const SessionCard = ({
   onComplete,
 }: Props) => {
   const [saveSection] = useSaveSectionMutation();
+  const [saveSession] = useSaveSessionMutation();
   const [deleteSection] = useDeleteSectionMutation();
   const [showAddSection, setShowAddSection] = useState(false);
+  const [title, setTitle] = useState(session?.title || "");
   const Icon = getCategoryIcon(session);
   const exerciseCount = session?.sections?.length || 0;
+
+  // Sync local state with session prop changes
+  useEffect(() => {
+    setTitle(session?.title || "");
+  }, [session?.title]);
 
   const handleSectionUpdate = async (
     updatedSection: Omit<HypertrophySection, "session">
@@ -38,6 +44,32 @@ export const SessionCard = ({
     await saveSection(updatedSection).unwrap();
 
     setShowAddSection(false);
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+  };
+
+  const handleTitleBlur = async () => {
+    if (
+      title !== session?.title &&
+      session?.sessionGuid &&
+      session?.title !== undefined
+    ) {
+      try {
+        await saveSession({
+          sessionGuid: session.sessionGuid,
+          userGuid: session.userGuid,
+          title: title,
+          sections: session.sections,
+          isCompleted: session.isActive,
+        }).unwrap();
+      } catch (error) {
+        console.error("Failed to save session title:", error);
+        // Revert to original title on error
+        setTitle(session?.title || "");
+      }
+    }
   };
 
   const handleSectionDelete = async (sectionGuid: string) => {
@@ -62,11 +94,10 @@ export const SessionCard = ({
                   color: "white",
                   marginRight: "8px",
                 }}
-                onChange={(e) => {
-                  // Handle title change
-                }}
-                defaultValue={session?.title || "Title einfügen"}
-                value={session?.title}
+                onChange={handleTitleChange}
+                onBlur={handleTitleBlur}
+                value={title}
+                placeholder="Title einfügen"
               />
             </div>
             <div className="text-sm text-white/70">
