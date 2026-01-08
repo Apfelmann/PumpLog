@@ -26,6 +26,7 @@ export const SessionCard = ({
   onComplete,
 }: Props) => {
   const [saveSection] = useSaveSectionMutation();
+  const [saveSession] = useSaveSessionMutation();
   const [deleteSection] = useDeleteSectionMutation();
   const [showAddSection, setShowAddSection] = useState(false);
   const [title, setTitle] = useState(session?.title || "");
@@ -50,7 +51,11 @@ export const SessionCard = ({
   };
 
   const handleTitleBlur = async () => {
-    if (title !== session?.title && session?.sessionGuid && session?.title !== undefined) {
+    if (
+      title !== session?.title &&
+      session?.sessionGuid &&
+      session?.title !== undefined
+    ) {
       try {
         await saveSession({
           sessionGuid: session.sessionGuid,
@@ -65,6 +70,8 @@ export const SessionCard = ({
         setTitle(session?.title || "");
       }
     }
+  };
+
   const handleSectionDelete = async (sectionGuid: string) => {
     await deleteSection(sectionGuid).unwrap();
   };
