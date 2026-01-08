@@ -1,0 +1,22 @@
+name: AI PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: AI PR Review with Copilot
+        uses: github/copilot-pr-review@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
