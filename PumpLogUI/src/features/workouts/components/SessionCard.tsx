@@ -10,7 +10,6 @@ import {
 } from "../../../services/sessionApi";
 import { HypertrophySectionCard } from "../HypertrophySection";
 import type { Session, HypertrophySection } from "../../../models/section";
-import { useDispatch } from "react-redux";
 
 type Props = {
   session?: any;
@@ -26,7 +25,9 @@ export const SessionCard = ({
   onComplete,
 }: Props) => {
   const [saveSection] = useSaveSectionMutation();
+  const [saveSession] = useSaveSessionMutation();
   const [showAddSection, setShowAddSection] = useState(false);
+  const [title, setTitle] = useState(session?.title || "");
   const Icon = getCategoryIcon(session);
   const exerciseCount = session?.sections?.length || 0;
 
@@ -36,6 +37,28 @@ export const SessionCard = ({
     await saveSection(updatedSection).unwrap();
 
     setShowAddSection(false);
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+  };
+
+  const handleTitleBlur = async () => {
+    if (title !== session?.title && session?.sessionGuid) {
+      try {
+        await saveSession({
+          sessionGuid: session.sessionGuid,
+          userGuid: session.userGuid,
+          title: title,
+          sections: session.sections,
+          isCompleted: !session.isActive,
+        }).unwrap();
+      } catch (error) {
+        console.error("Failed to save session title:", error);
+        // Revert to original title on error
+        setTitle(session?.title || "");
+      }
+    }
   };
 
   return (
@@ -56,11 +79,10 @@ export const SessionCard = ({
                   color: "white",
                   marginRight: "8px",
                 }}
-                onChange={(e) => {
-                  // Handle title change
-                }}
-                defaultValue={session?.title || "Title einfügen"}
-                value={session?.title}
+                onChange={handleTitleChange}
+                onBlur={handleTitleBlur}
+                value={title}
+                placeholder="Title einfügen"
               />
             </div>
             <div className="text-sm text-white/70">
