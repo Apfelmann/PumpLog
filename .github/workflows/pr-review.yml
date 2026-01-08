@@ -13,10 +13,7 @@ jobs:
   review:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: AI PR Review with Copilot
-        uses: github/copilot-pr-review@v1
+      - name: AI Code Review
+        uses: Apfelmann/AiReviewer@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
