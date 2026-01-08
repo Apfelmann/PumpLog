@@ -3,7 +3,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import AddIcon from "@mui/icons-material/Add";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useSaveSectionMutation,
   useSaveSessionMutation,
@@ -31,6 +31,11 @@ export const SessionCard = ({
   const Icon = getCategoryIcon(session);
   const exerciseCount = session?.sections?.length || 0;
 
+  // Sync local state with session prop changes
+  useEffect(() => {
+    setTitle(session?.title || "");
+  }, [session?.title]);
+
   const handleSectionUpdate = async (
     updatedSection: Omit<HypertrophySection, "session">
   ) => {
@@ -44,7 +49,7 @@ export const SessionCard = ({
   };
 
   const handleTitleBlur = async () => {
-    if (title !== session?.title && session?.sessionGuid) {
+    if (title !== session?.title && session?.sessionGuid && session?.title !== undefined) {
       try {
         await saveSession({
           sessionGuid: session.sessionGuid,
