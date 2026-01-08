@@ -7,6 +7,7 @@ import { useState } from "react";
 import {
   useSaveSectionMutation,
   useSaveSessionMutation,
+  useDeleteSectionMutation,
 } from "../../../services/sessionApi";
 import { HypertrophySectionCard } from "../HypertrophySection";
 import type { Session, HypertrophySection } from "../../../models/section";
@@ -26,6 +27,7 @@ export const SessionCard = ({
   onComplete,
 }: Props) => {
   const [saveSection] = useSaveSectionMutation();
+  const [deleteSection] = useDeleteSectionMutation();
   const [showAddSection, setShowAddSection] = useState(false);
   const Icon = getCategoryIcon(session);
   const exerciseCount = session?.sections?.length || 0;
@@ -36,6 +38,10 @@ export const SessionCard = ({
     await saveSection(updatedSection).unwrap();
 
     setShowAddSection(false);
+  };
+
+  const handleSectionDelete = async (sectionGuid: string) => {
+    await deleteSection(sectionGuid).unwrap();
   };
 
   return (
@@ -86,9 +92,7 @@ export const SessionCard = ({
               section={section}
               sessionGuid={session.sessionGuid}
               onSave={handleSectionUpdate}
-              onDelete={() => {
-                // Remove section from session
-              }}
+              onDelete={() => handleSectionDelete(section.sectionGuid)}
             />
           ))}
 
