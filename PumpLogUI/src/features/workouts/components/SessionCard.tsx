@@ -62,7 +62,7 @@ export const SessionCard = ({
           userGuid: session.userGuid,
           title: title,
           sections: session.sections,
-          isCompleted: !session.isActive,
+          isCompleted: session.isActive,
         }).unwrap();
       } catch (error) {
         console.error("Failed to save session title:", error);
