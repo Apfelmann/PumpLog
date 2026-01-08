@@ -43,6 +43,13 @@ export const sessionApi = createApi({
       }),
       invalidatesTags: ["activesessions"],
     }),
+    deleteSection: builder.mutation<void, string>({
+      query: (sectionGuid) => ({
+        url: `/DeleteSection/${sectionGuid}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["activesessions"],
+    }),
   }),
 });
 
@@ -50,4 +57,5 @@ export const {
   useGetSessionsQuery,
   useSaveSessionMutation,
   useSaveSectionMutation,
+  useDeleteSectionMutation,
 } = sessionApi;

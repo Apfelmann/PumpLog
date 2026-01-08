@@ -23,6 +23,7 @@ namespace PumpLogApi.Managers
         Task<List<Session>> GetActiveSessions();
         Task<SaveSessionResult> SaveSession(SessionRequest session);
         Task<Section> SaveSection(SectionRequest section);
+        Task<bool> DeleteSection(Guid sectionGuid);
         Task<List<Exercise>> GetAllExercises();
         Task<Exercise> CreateExercise(Exercise exercise);
         Task<List<BodyPart>> GetAllBodyParts();
@@ -315,6 +316,19 @@ namespace PumpLogApi.Managers
         public async Task<List<BodyPart>> GetAllBodyParts()
         {
             return await _context.BodyParts.ToListAsync();
+        }
+
+        public async Task<bool> DeleteSection(Guid sectionGuid)
+        {
+            var section = await _context.Sections.FirstOrDefaultAsync(s => s.SectionGuid == sectionGuid);
+            if (section == null)
+            {
+                return false;
+            }
+
+            _context.Sections.Remove(section);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
