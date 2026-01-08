@@ -62,6 +62,24 @@ namespace PumpLogApi.Controllers
             }
         }
 
+        [HttpDelete("DeleteSection/{sectionGuid}")]
+        public async Task<ActionResult> DeleteSection(Guid sectionGuid)
+        {
+            try
+            {
+                var result = await _pumpLogManager.DeleteSection(sectionGuid);
+                if (!result)
+                {
+                    return NotFound(new { message = "Section not found" });
+                }
+                return Ok(new { message = "Section deleted successfully" });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An error occurred while deleting the section" });
+            }
+        }
+
         [HttpGet("Exercises")]
         public async Task<ActionResult<IEnumerable<Exercise>>> GetExercises()
         {
