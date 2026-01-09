@@ -3,6 +3,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
+import CheckIcon from "@mui/icons-material/Check";
 import { useState, useEffect } from "react";
 import {
   useSaveSectionMutation,
@@ -30,6 +32,7 @@ export const SessionCard = ({
   const [deleteSection] = useDeleteSectionMutation();
   const [showAddSection, setShowAddSection] = useState(false);
   const [title, setTitle] = useState(session?.title || "");
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const Icon = getCategoryIcon(session);
   const exerciseCount = session?.sections?.length || 0;
 
@@ -76,8 +79,39 @@ export const SessionCard = ({
     await deleteSection(sectionGuid).unwrap();
   };
 
+  const handleDeleteClick = async () => {
+    if (!isConfirmingDelete) {
+      setIsConfirmingDelete(true);
+      return;
+    }
+
+    try {
+      await saveSession({
+        sessionGuid: session.sessionGuid,
+        userGuid: session.userGuid,
+        title: session.title,
+        sections: session.sections,
+        isCompleted: session.isActive,
+        isDeleted: true,
+      }).unwrap();
+    } catch (error) {
+      console.error("Failed to delete session:", error);
+      setIsConfirmingDelete(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsConfirmingDelete(false);
+  };
+
   return (
-    <div className="rounded-[24px] border border-white/10 bg-gradient-to-b from-zinc-800/70 to-neutral-900 px-6 py-5 shadow-xl">
+    <div
+      className={`rounded-[24px] border px-6 py-5 shadow-xl transition-colors ${
+        isConfirmingDelete
+          ? "border-red-500/50 bg-gradient-to-b from-red-900/30 to-red-950/50"
+          : "border-white/10 bg-gradient-to-b from-zinc-800/70 to-neutral-900"
+      }`}
+    >
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="rounded-2xl border border-white/10 bg-black/30 p-3 text-amber-300">
@@ -152,6 +186,32 @@ export const SessionCard = ({
             >
               Workout abschließen
             </Button>
+            {isConfirmingDelete ? (
+              <div className="flex gap-2">
+                <IconButton
+                  onClick={handleDeleteClick}
+                  className="!text-red-400 !border !border-red-400/60"
+                  title="Löschen bestätigen"
+                >
+                  <CheckIcon />
+                </IconButton>
+                <IconButton
+                  onClick={handleCancelDelete}
+                  className="!text-white/60 !border !border-white/20"
+                  title="Abbrechen"
+                >
+                  <CloseIcon />
+                </IconButton>
+              </div>
+            ) : (
+              <IconButton
+                onClick={handleDeleteClick}
+                className="!text-white/60 !border !border-white/20 hover:!text-red-400 hover:!border-red-400/60"
+                title="Session löschen"
+              >
+                <CloseIcon />
+              </IconButton>
+            )}
           </div>
         </div>
       )}

@@ -6,6 +6,7 @@ export type saveSessionRequest = {
   sections: Section[];
   title: string;
   isCompleted: boolean;
+  isDeleted?: boolean;
 };
 
 export type sessionResponse = {
