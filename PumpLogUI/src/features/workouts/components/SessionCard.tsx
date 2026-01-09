@@ -46,7 +46,11 @@ export const SessionCard = ({
     if (!isConfirmingDelete) return;
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (deleteIconRef.current && event.target && !deleteIconRef.current.contains(event.target as Node)) {
+      if (
+        deleteIconRef.current &&
+        event.target &&
+        !deleteIconRef.current.contains(event.target as Node)
+      ) {
         setIsConfirmingDelete(false);
       }
     };
@@ -110,6 +114,7 @@ export const SessionCard = ({
         isCompleted: session.isActive,
         isDeleted: true,
       }).unwrap();
+      setIsConfirmingDelete(false);
     } catch (error) {
       console.error("Failed to delete session:", error);
       setIsConfirmingDelete(false);
