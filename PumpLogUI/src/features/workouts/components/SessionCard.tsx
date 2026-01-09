@@ -81,7 +81,7 @@ export const SessionCard = ({
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="rounded-2xl border border-white/10 bg-black/30 p-3 text-amber-300">
-            <Icon fontSize="medium" />
+            <Icon fontSize="large" />
           </div>
           <div>
             <div>
