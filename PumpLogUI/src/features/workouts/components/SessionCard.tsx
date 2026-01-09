@@ -46,7 +46,7 @@ export const SessionCard = ({
     if (!isConfirmingDelete) return;
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (deleteIconRef.current && !deleteIconRef.current.contains(event.target as Node)) {
+      if (deleteIconRef.current && event.target && !deleteIconRef.current.contains(event.target as Node)) {
         setIsConfirmingDelete(false);
       }
     };
@@ -129,6 +129,9 @@ export const SessionCard = ({
           <div
             ref={deleteIconRef}
             onClick={handleDeleteClick}
+            onKeyDown={(e) => e.key === "Enter" && handleDeleteClick()}
+            role="button"
+            tabIndex={0}
             className={`rounded-2xl border p-3 cursor-pointer transition-colors ${
               isConfirmingDelete
                 ? "border-red-500/50 bg-red-900/30 text-red-400"
