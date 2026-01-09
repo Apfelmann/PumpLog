@@ -5,7 +5,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import RemoveIcon from "@mui/icons-material/Remove";
 import CheckIcon from "@mui/icons-material/Check";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import SaveIcon from "@mui/icons-material/Save";
+import LinkIcon from "@mui/icons-material/Link";
 import { useGetExercisesQuery } from "../../services/exerciseApi";
 import type { Exercise } from "../../models/exercise";
 import { ExerciseInput } from "./components/ExerciseInput";
@@ -179,24 +179,20 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
   };
 
   return (
-    <div
-      className={`rounded-[24px] border border-white/10 bg-gradient-to-b from-zinc-800/70 to-neutral-900 px-6 py-5 shadow-xl mb-4 text-white relative ${
-        isSuperset ? "border-b-0 rounded-b-none mb-0 pb-8" : ""
-      }`}
-    >
+    <div className="rounded-[24px] border border-white/10 bg-gradient-to-b from-zinc-800/70 to-neutral-900 px-6 py-5 shadow-xl mb-4 text-white relative">
       {isSuperset && (
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10 bg-neutral-900 border border-white/10 rounded-full p-1">
-          <AddIcon className="text-amber-300 rotate-45" fontSize="small" />
+        <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 z-10 bg-zinc-900 border border-white/10 rounded-full p-1.5 shadow-lg">
+          <LinkIcon className="text-amber-300" fontSize="small" />
         </div>
       )}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Typography variant="h6" className="text-amber-300 font-semibold">
-            {section ? "Übung" : "Neue Übung"}
+            {section ? section.exerciseName : "Neue Übung"}
           </Typography>
           {isSuperset && (
             <span className="text-xs font-bold bg-amber-300/10 text-amber-300 px-2 py-0.5 rounded border border-amber-300/20">
-              Supersatz Start
+              Supersatz
             </span>
           )}
         </div>
@@ -278,9 +274,6 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
         <div className="flex flex-col gap-6">
           <div>
             <div className="flex justify-between items-baseline mb-3">
-              <Typography className="text-lg font-medium text-white">
-                {selectedExercise?.name || "Keine Übung"}
-              </Typography>
               <div className="flex items-baseline gap-1 text-amber-300/90 font-mono">
                 <span className="text-xl font-bold">{weight}</span>
                 <span className="text-xs text-amber-300/60 uppercase tracking-wider">
