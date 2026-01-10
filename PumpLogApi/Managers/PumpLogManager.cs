@@ -384,8 +384,8 @@ namespace PumpLogApi.Managers
 
                         // If setResults doesn't have the right number of entries, it's incomplete
                         var hasCorrectSetCount = setResultsArray.Count == oldHypertrophy.Sets;
-                        var allSetsCompleted = hasCorrectSetCount &&
-                                               setResultsArray.All(reps => reps >= oldHypertrophy.Reps);
+                        var allRepsMetTarget = hasCorrectSetCount && setResultsArray.All(reps => reps >= oldHypertrophy.Reps);
+                        var allSetsCompleted = allRepsMetTarget;
 
                         // Debug logging
                         Console.WriteLine($"[FinishWorkout] Exercise: {oldHypertrophy.ExerciseName}");
@@ -394,7 +394,7 @@ namespace PumpLogApi.Managers
                         Console.WriteLine($"[FinishWorkout]   Sets: {oldHypertrophy.Sets}, Reps: {oldHypertrophy.Reps}");
                         Console.WriteLine($"[FinishWorkout]   Parsed count: {setResultsArray.Count}");
                         Console.WriteLine($"[FinishWorkout]   Count match: {hasCorrectSetCount}");
-                        Console.WriteLine($"[FinishWorkout]   All >= target: {(hasCorrectSetCount ? setResultsArray.All(reps => reps >= oldHypertrophy.Reps).ToString() : "N/A")}");
+                        Console.WriteLine($"[FinishWorkout]   All >= target: {(hasCorrectSetCount ? allRepsMetTarget.ToString() : "N/A")}");
                         Console.WriteLine($"[FinishWorkout]   allSetsCompleted: {allSetsCompleted}");
                         Console.WriteLine($"[FinishWorkout]   Old weight: {oldHypertrophy.Weight}");
 
