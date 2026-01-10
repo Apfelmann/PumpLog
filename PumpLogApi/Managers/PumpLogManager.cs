@@ -382,12 +382,27 @@ namespace PumpLogApi.Managers
                         var allSetsCompleted = setResultsArray.Count == oldHypertrophy.Sets &&
                                                setResultsArray.All(reps => reps >= oldHypertrophy.Reps);
 
+                        // Debug logging
+                        Console.WriteLine($"[FinishWorkout] Exercise: {oldHypertrophy.ExerciseName}");
+                        Console.WriteLine($"[FinishWorkout]   SetResults: '{oldHypertrophy.SetResults}'");
+                        Console.WriteLine($"[FinishWorkout]   Parsed: [{string.Join(", ", setResultsArray)}]");
+                        Console.WriteLine($"[FinishWorkout]   Sets: {oldHypertrophy.Sets}, Reps: {oldHypertrophy.Reps}");
+                        Console.WriteLine($"[FinishWorkout]   Count match: {setResultsArray.Count == oldHypertrophy.Sets}");
+                        Console.WriteLine($"[FinishWorkout]   All >= target: {setResultsArray.All(reps => reps >= oldHypertrophy.Reps)}");
+                        Console.WriteLine($"[FinishWorkout]   allSetsCompleted: {allSetsCompleted}");
+                        Console.WriteLine($"[FinishWorkout]   Old weight: {oldHypertrophy.Weight}");
+
                         if (allSetsCompleted)
                         {
                             // Increase weight by 1 kg (TODO: make this configurable in settings)
                             newWeight += 1;
                             // Reset completed reps to 0 for all sets
                             newSetResults = string.Join(",", Enumerable.Repeat("0", oldHypertrophy.Sets));
+                            Console.WriteLine($"[FinishWorkout]   New weight: {newWeight} (increased!)");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[FinishWorkout]   Weight unchanged: {newWeight}");
                         }
 
                         var newHypertrophy = new HypertrophySection
