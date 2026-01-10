@@ -113,8 +113,10 @@ namespace PumpLogApi.Controllers
             {
                 return NotFound(new { message = ex.Message });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Log the exception for debugging while returning a safe message
+                Console.Error.WriteLine($"Error finishing workout: {ex}");
                 return StatusCode(500, new { message = "An error occurred while finishing the workout" });
             }
         }

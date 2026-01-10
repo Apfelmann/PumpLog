@@ -384,7 +384,7 @@ namespace PumpLogApi.Managers
 
                         if (allSetsCompleted)
                         {
-                            // Increase weight by 1 kg
+                            // Increase weight by 1 kg (TODO: make this configurable in settings)
                             newWeight += 1;
                             // Reset completed reps to 0 for all sets
                             newSetResults = string.Join(",", Enumerable.Repeat("0", oldHypertrophy.Sets));
