@@ -1,8 +1,7 @@
-import type { Section } from "../types";
 import { SetChip } from "./SetChip";
 
 type Props = {
-  exercise: Section;
+  exercise: any;
   onOpenReps: (
     exId: string,
     setIdx: number,

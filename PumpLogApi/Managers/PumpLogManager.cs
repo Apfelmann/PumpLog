@@ -27,6 +27,7 @@ namespace PumpLogApi.Managers
         Task<List<Exercise>> GetAllExercises();
         Task<Exercise> CreateExercise(Exercise exercise);
         Task<List<BodyPart>> GetAllBodyParts();
+        Task<Session> FinishWorkout(Guid sessionGuid);
     }
 
     public class PumpLogManager(PumpLogDbContext _context, ICurrentUserService currentUserService) : IPumpLogManager
@@ -329,6 +330,127 @@ namespace PumpLogApi.Managers
             _context.Sections.Remove(section);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<Session> FinishWorkout(Guid sessionGuid)
+        {
+            var session = await _context.Sessions
+                .Include(s => s.Sections)
+                .FirstOrDefaultAsync(s => s.SessionGuid == sessionGuid && s.UserGuid == Guid.Parse(currentUserService.Id));
+
+            if (session == null)
+            {
+                throw new ArgumentException("Session not found");
+            }
+
+            // Mark current session as completed
+            session.IsCompleted = true;
+            await _context.SaveChangesAsync();
+
+            // Create new session
+            var newSession = new Session
+            {
+                Title = session.Title,
+                FocusedBodyPart = session.FocusedBodyPart,
+                UserGuid = Guid.Parse(currentUserService.Id),
+                IsDeleted = false,
+                IsCompleted = false,
+                SessionGuid = Guid.NewGuid(),
+                SessionNumber = (_context.Sessions
+                    .Where(s => s.UserGuid == Guid.Parse(currentUserService.Id))
+                    .Max(s => (int?)s.SessionNumber) ?? 0) + 1,
+                CreationDate = DateTime.UtcNow,
+                Sections = new List<Section>()
+            };
+
+            // Copy sections with progressive overload logic
+            if (session.Sections != null)
+            {
+                foreach (var oldSection in session.Sections.OrderBy(s => s.Order))
+                {
+                    if (oldSection is HypertrophySection oldHypertrophy)
+                    {
+                        var newWeight = oldHypertrophy.Weight;
+                        var newSetResults = oldHypertrophy.SetResults;
+
+                        // Check if all sets achieved target reps
+                        // Parse setResults - handle empty or malformed data
+                        var setResultsArray = string.IsNullOrWhiteSpace(oldHypertrophy.SetResults)
+                            ? new List<int>()
+                            : oldHypertrophy.SetResults
+                                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                .Select(s => int.TryParse(s.Trim(), out var val) ? val : 0)
+                                .ToList();
+
+                        // If setResults doesn't have the right number of entries, it's incomplete
+                        var hasCorrectSetCount = setResultsArray.Count == oldHypertrophy.Sets;
+                        var allRepsMetTarget = hasCorrectSetCount && setResultsArray.All(reps => reps >= oldHypertrophy.Reps);
+                        var allSetsCompleted = allRepsMetTarget;
+
+                        // Debug logging
+                        Console.WriteLine($"[FinishWorkout] Exercise: {oldHypertrophy.ExerciseName}");
+                        Console.WriteLine($"[FinishWorkout]   SetResults: '{oldHypertrophy.SetResults}'");
+                        Console.WriteLine($"[FinishWorkout]   Parsed: [{string.Join(", ", setResultsArray)}]");
+                        Console.WriteLine($"[FinishWorkout]   Sets: {oldHypertrophy.Sets}, Reps: {oldHypertrophy.Reps}");
+                        Console.WriteLine($"[FinishWorkout]   Parsed count: {setResultsArray.Count}");
+                        Console.WriteLine($"[FinishWorkout]   Count match: {hasCorrectSetCount}");
+                        Console.WriteLine($"[FinishWorkout]   All >= target: {(hasCorrectSetCount ? allRepsMetTarget.ToString() : "N/A")}");
+                        Console.WriteLine($"[FinishWorkout]   allSetsCompleted: {allSetsCompleted}");
+                        Console.WriteLine($"[FinishWorkout]   Old weight: {oldHypertrophy.Weight}");
+
+                        if (allSetsCompleted)
+                        {
+                            // Increase weight by 1 kg (TODO: make this configurable in settings)
+                            newWeight += 1;
+                            // Reset completed reps to 0 for all sets
+                            newSetResults = string.Join(",", Enumerable.Repeat("0", oldHypertrophy.Sets));
+                            Console.WriteLine($"[FinishWorkout]   New weight: {newWeight} (increased!)");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[FinishWorkout]   Weight unchanged: {newWeight}");
+                        }
+
+                        var newHypertrophy = new HypertrophySection
+                        {
+                            SectionGuid = Guid.NewGuid(),
+                            SessionGuid = newSession.SessionGuid,
+                            Session = newSession,
+                            Order = oldSection.Order,
+                            SupersetWithNext = oldSection.SupersetWithNext,
+                            ExerciseGuid = oldSection.ExerciseGuid,
+                            ExerciseName = oldHypertrophy.ExerciseName,
+                            Weight = newWeight,
+                            Reps = oldHypertrophy.Reps,
+                            Sets = oldHypertrophy.Sets,
+                            SetResults = newSetResults
+                        };
+
+                        newSession.Sections.Add(newHypertrophy);
+                    }
+                    else if (oldSection is CrossfitSection oldCrossfit)
+                    {
+                        var newCrossfit = new CrossfitSection
+                        {
+                            SectionGuid = Guid.NewGuid(),
+                            SessionGuid = newSession.SessionGuid,
+                            Session = newSession,
+                            Order = oldSection.Order,
+                            SupersetWithNext = oldSection.SupersetWithNext,
+                            ExerciseGuid = oldSection.ExerciseGuid,
+                            WodName = oldCrossfit.WodName,
+                            Description = oldCrossfit.Description
+                        };
+
+                        newSession.Sections.Add(newCrossfit);
+                    }
+                }
+            }
+
+            _context.Sessions.Add(newSession);
+            await _context.SaveChangesAsync();
+
+            return newSession;
         }
     }
 }

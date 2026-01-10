@@ -100,5 +100,25 @@ namespace PumpLogApi.Controllers
             var bodyParts = await _pumpLogManager.GetAllBodyParts();
             return Ok(bodyParts);
         }
+
+        [HttpPost("FinishWorkout/{sessionGuid}")]
+        public async Task<ActionResult<Session>> FinishWorkout(Guid sessionGuid)
+        {
+            try
+            {
+                var newSession = await _pumpLogManager.FinishWorkout(sessionGuid);
+                return Ok(newSession);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging while returning a safe message
+                Console.Error.WriteLine($"Error finishing workout: {ex}");
+                return StatusCode(500, new { message = "An error occurred while finishing the workout" });
+            }
+        }
     }
 }

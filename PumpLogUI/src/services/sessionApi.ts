@@ -50,6 +50,13 @@ export const sessionApi = createApi({
       }),
       invalidatesTags: ["activesessions"],
     }),
+    finishWorkout: builder.mutation<sessionResponse, string>({
+      query: (sessionGuid) => ({
+        url: `/FinishWorkout/${sessionGuid}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["activesessions"],
+    }),
   }),
 });
 
@@ -58,4 +65,5 @@ export const {
   useSaveSessionMutation,
   useSaveSectionMutation,
   useDeleteSectionMutation,
+  useFinishWorkoutMutation,
 } = sessionApi;

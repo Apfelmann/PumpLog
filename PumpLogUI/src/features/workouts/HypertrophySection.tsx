@@ -9,7 +9,7 @@ import LinkIcon from "@mui/icons-material/Link";
 import { useGetExercisesQuery } from "../../services/exerciseApi";
 import type { Exercise } from "../../models/exercise";
 import { ExerciseInput } from "./components/ExerciseInput";
-import type { HypertrophySection, Session } from "../../models/section";
+import type { HypertrophySection } from "../../models/section";
 
 interface HypertrophySectionProps {
   section?: HypertrophySection;
@@ -61,6 +61,37 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
       }, {} as Record<number, number>);
     }
   );
+
+  // Helper function to save setResults to backend
+  const saveSetResults = (resultsToSave: Record<number, number>) => {
+    if (!section?.sectionGuid || !selectedExercise || !onSave) return;
+
+    const resultArray: string[] = [];
+    for (let i = 0; i < sets; i++) {
+      if (resultsToSave[i] !== undefined) {
+        resultArray.push(resultsToSave[i].toString());
+      } else {
+        resultArray.push("0");
+      }
+    }
+    const setResultsString = resultArray.join(",");
+
+    const sectionData: Omit<HypertrophySection, "session"> = {
+      sectionGuid: section.sectionGuid,
+      sessionGuid: sessionGuid,
+      order: section.order,
+      sectionType: "Hypertrophy",
+      exerciseGuid: selectedExercise.exerciseGuid,
+      exerciseName: selectedExercise.name,
+      supersetWithNext: isSuperset,
+      weight: weight,
+      reps: reps,
+      sets: sets,
+      setResults: setResultsString,
+    };
+
+    onSave(sectionData);
+  };
 
   // Popover state for adjusting reps
   const [popoverAnchor, setPopoverAnchor] = useState<HTMLDivElement | null>(
@@ -114,9 +145,12 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
     const val = mainSetResults[index];
 
     if (val === undefined) {
+      // First click: set target reps and save immediately
       const newResults = { ...mainSetResults, [index]: targetReps };
       setMainSetResults(newResults);
+      saveSetResults(newResults);
     } else {
+      // Already has value: open popover to adjust
       setPopoverAnchor(e.currentTarget);
       setActiveSet({ index, targetReps });
     }
@@ -136,6 +170,13 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
     const newResults = { ...mainSetResults };
     delete newResults[index];
     setMainSetResults(newResults);
+    saveSetResults(newResults);
+    setPopoverAnchor(null);
+  };
+
+  const handlePopoverClose = () => {
+    // Save when closing popover (after adjusting reps)
+    saveSetResults(mainSetResults);
     setPopoverAnchor(null);
   };
 
@@ -301,7 +342,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
       <Popover
         open={Boolean(popoverAnchor)}
         anchorEl={popoverAnchor}
-        onClose={() => setPopoverAnchor(null)}
+        onClose={handlePopoverClose}
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "center",
