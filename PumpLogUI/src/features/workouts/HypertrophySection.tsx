@@ -9,7 +9,7 @@ import LinkIcon from "@mui/icons-material/Link";
 import { useGetExercisesQuery } from "../../services/exerciseApi";
 import type { Exercise } from "../../models/exercise";
 import { ExerciseInput } from "./components/ExerciseInput";
-import type { HypertrophySection, Session } from "../../models/section";
+import type { HypertrophySection } from "../../models/section";
 
 interface HypertrophySectionProps {
   section?: HypertrophySection;

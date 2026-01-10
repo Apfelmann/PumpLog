@@ -1,9 +1,8 @@
-import type { Section } from "../types";
 import { ExerciseRow } from "./ExerciseRow";
 
 type Props = {
-  first: Section;
-  second: Section;
+  first: any;
+  second: any;
   onOpenReps: (
     exId: string,
     setIdx: number,

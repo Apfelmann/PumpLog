@@ -9,31 +9,31 @@ import {
   useSaveSectionMutation,
   useSaveSessionMutation,
   useDeleteSectionMutation,
+  useFinishWorkoutMutation,
 } from "../../../services/sessionApi";
 import { HypertrophySectionCard } from "../HypertrophySection";
-import type { Session, HypertrophySection } from "../../../models/section";
+import type { HypertrophySection } from "../../../models/section";
 
 type Props = {
   session?: any;
   expanded: boolean;
   onToggle: (id: string) => void;
-  onComplete: (id: string) => void;
 };
 
 export const SessionCard = ({
   session,
   expanded,
   onToggle,
-  onComplete,
 }: Props) => {
   const [saveSection] = useSaveSectionMutation();
   const [saveSession] = useSaveSessionMutation();
   const [deleteSection] = useDeleteSectionMutation();
+  const [finishWorkout] = useFinishWorkoutMutation();
   const [showAddSection, setShowAddSection] = useState(false);
   const [title, setTitle] = useState(session?.title || "");
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const deleteIconRef = useRef<HTMLDivElement>(null);
-  const Icon = isConfirmingDelete ? CloseIcon : getCategoryIcon(session);
+  const Icon = isConfirmingDelete ? CloseIcon : getCategoryIcon();
   const exerciseCount = session?.sections?.length || 0;
 
   // Sync local state with session prop changes
@@ -118,6 +118,14 @@ export const SessionCard = ({
     } catch (error) {
       console.error("Failed to delete session:", error);
       setIsConfirmingDelete(false);
+    }
+  };
+
+  const handleFinishWorkout = async () => {
+    try {
+      await finishWorkout(session.sessionGuid).unwrap();
+    } catch (error) {
+      console.error("Failed to finish workout:", error);
     }
   };
 
@@ -209,7 +217,7 @@ export const SessionCard = ({
           <div className="flex flex-wrap gap-3">
             <Button
               variant="contained"
-              onClick={() => onComplete(session?.id || "")}
+              onClick={handleFinishWorkout}
               className="!rounded-2xl !bg-emerald-400/90 !px-4 !py-2 !text-black hover:!bg-emerald-400"
             >
               Workout abschließen
@@ -221,6 +229,6 @@ export const SessionCard = ({
   );
 };
 
-function getCategoryIcon(workout?: Session) {
+function getCategoryIcon() {
   return FitnessCenterIcon;
 }

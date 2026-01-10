@@ -56,7 +56,6 @@ export const WorkoutsHome = () => {
                 session={session}
                 expanded={expandedId === session.sessionGuid}
                 onToggle={() => toggleExpanded(session.sessionGuid)}
-                onComplete={() => {}}
               />
             ))}
           </div>
