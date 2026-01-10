@@ -155,7 +155,7 @@ namespace PumpLogApi.Managers
                 .Sessions
                 .Include(s => s.Sections)
                 .Where(x => x.UserGuid == Guid.Parse(currentUserService.Id) && x.IsDeleted == false && x.IsCompleted == false)
-                .OrderByDescending(s => s.CreationDate)
+                .OrderBy(s => s.CreationDate)
                 .ToListAsync();
             return activeSessions;
         }
