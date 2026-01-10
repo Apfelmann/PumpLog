@@ -374,12 +374,17 @@ namespace PumpLogApi.Managers
                         var newSetResults = oldHypertrophy.SetResults;
 
                         // Check if all sets achieved target reps
-                        var setResultsArray = oldHypertrophy.SetResults
-                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                            .Select(s => int.TryParse(s.Trim(), out var val) ? val : 0)
-                            .ToList();
+                        // Parse setResults - handle empty or malformed data
+                        var setResultsArray = string.IsNullOrWhiteSpace(oldHypertrophy.SetResults)
+                            ? new List<int>()
+                            : oldHypertrophy.SetResults
+                                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                .Select(s => int.TryParse(s.Trim(), out var val) ? val : 0)
+                                .ToList();
 
-                        var allSetsCompleted = setResultsArray.Count == oldHypertrophy.Sets &&
+                        // If setResults doesn't have the right number of entries, it's incomplete
+                        var hasCorrectSetCount = setResultsArray.Count == oldHypertrophy.Sets;
+                        var allSetsCompleted = hasCorrectSetCount &&
                                                setResultsArray.All(reps => reps >= oldHypertrophy.Reps);
 
                         // Debug logging
@@ -387,8 +392,9 @@ namespace PumpLogApi.Managers
                         Console.WriteLine($"[FinishWorkout]   SetResults: '{oldHypertrophy.SetResults}'");
                         Console.WriteLine($"[FinishWorkout]   Parsed: [{string.Join(", ", setResultsArray)}]");
                         Console.WriteLine($"[FinishWorkout]   Sets: {oldHypertrophy.Sets}, Reps: {oldHypertrophy.Reps}");
-                        Console.WriteLine($"[FinishWorkout]   Count match: {setResultsArray.Count == oldHypertrophy.Sets}");
-                        Console.WriteLine($"[FinishWorkout]   All >= target: {setResultsArray.All(reps => reps >= oldHypertrophy.Reps)}");
+                        Console.WriteLine($"[FinishWorkout]   Parsed count: {setResultsArray.Count}");
+                        Console.WriteLine($"[FinishWorkout]   Count match: {hasCorrectSetCount}");
+                        Console.WriteLine($"[FinishWorkout]   All >= target: {(hasCorrectSetCount ? setResultsArray.All(reps => reps >= oldHypertrophy.Reps).ToString() : "N/A")}");
                         Console.WriteLine($"[FinishWorkout]   allSetsCompleted: {allSetsCompleted}");
                         Console.WriteLine($"[FinishWorkout]   Old weight: {oldHypertrophy.Weight}");
 
