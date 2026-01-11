@@ -37,11 +37,13 @@ export const WorkoutsHome = () => {
   };
   void _openReps; // TODO: wird später verwendet
 
-  const addWorkout = () => {
+  const addWorkout = async () => {
     try {
-      saveSession({});
+      const result = await saveSession({}).unwrap();
+      console.log("Session saved:", result);
     } catch (e) {
-      console.log("Error saving session:", e);
+      console.error("Error saving session:", e);
+      alert("Fehler beim Speichern: " + JSON.stringify(e));
     }
   };
 
