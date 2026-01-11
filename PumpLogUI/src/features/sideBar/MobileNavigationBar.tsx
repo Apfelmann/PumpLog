@@ -1,7 +1,6 @@
 import React from "react";
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material";
 import {
-  Dashboard,
   QueryStats,
   Settings,
   FitnessCenter,

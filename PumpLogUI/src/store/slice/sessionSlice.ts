@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Section, Session } from "../../models/section";
+import type { Session } from "../../models/section";
 
 interface SessionState {
   sessions: Session[];

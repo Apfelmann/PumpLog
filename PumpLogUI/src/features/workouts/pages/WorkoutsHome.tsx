@@ -14,12 +14,12 @@ export const WorkoutsHome = () => {
   const [modal, setModal] = useState<RepsModalState>({ open: false });
   const [saveSession] = useSaveSessionMutation();
 
-  const { data: sessions = [], isLoading, isError } = useGetSessionsQuery();
+  const { data: sessions = [] } = useGetSessionsQuery();
 
   const toggleExpanded = (id: string) =>
     setExpandedId((current) => (current === id ? null : id));
 
-  const openReps = (
+  const _openReps = (
     woId: string,
     exId: string,
     setIdx: number,
@@ -35,6 +35,7 @@ export const WorkoutsHome = () => {
       value: value ?? target,
     });
   };
+  void _openReps; // TODO: wird später verwendet
 
   const addWorkout = () => {
     try {
