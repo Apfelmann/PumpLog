@@ -71,7 +71,7 @@ export const WorkoutsHome = () => {
       <Fab
         color="primary"
         size="medium"
-        className="!bg-amber-300 !text-black fixed bottom-[-5px] left-1/2 -translate-x-1/2 shadow-2xl"
+        className="!bg-amber-300 !text-black fixed left-1/2 -translate-x-1/2 shadow-2xl z-50"
         onClick={addWorkout}
       >
         <AddIcon />
