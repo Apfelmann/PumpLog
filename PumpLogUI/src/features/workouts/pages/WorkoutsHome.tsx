@@ -41,18 +41,9 @@ export const WorkoutsHome = () => {
   void _openReps; // TODO: wird später verwendet
 
   const addWorkout = async () => {
-    // Debug: Zeige Token und URL
-    const hasToken = !!userSession?.accessToken;
-    const tokenPreview = userSession?.accessToken?.substring(0, 20) + "...";
-    alert(
-      `API URL: ${API_BASE_URL}\nToken vorhanden: ${hasToken}\nToken: ${tokenPreview}`
-    );
-
     try {
       const result = await saveSession({}).unwrap();
-      console.log("Session saved:", result);
     } catch (e) {
-      console.error("Error saving session:", e);
       alert("Fehler beim Speichern: " + JSON.stringify(e));
     }
   };
