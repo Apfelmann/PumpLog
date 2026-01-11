@@ -9,6 +9,7 @@ import {
   useSaveSessionMutation,
 } from "../../../services/sessionApi";
 import { usePumpLogSelector } from "../../../store/storehooks";
+import { API_BASE_URL } from "../../../constants";
 
 export const WorkoutsHome = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -40,10 +41,10 @@ export const WorkoutsHome = () => {
   void _openReps; // TODO: wird später verwendet
 
   const addWorkout = async () => {
-    // Debug: Zeige Token-Status
+    // Debug: Zeige Token und URL
     const hasToken = !!userSession?.accessToken;
     const tokenPreview = userSession?.accessToken?.substring(0, 20) + "...";
-    alert(`Token vorhanden: ${hasToken}\nToken: ${tokenPreview}`);
+    alert(`API URL: ${API_BASE_URL}\nToken vorhanden: ${hasToken}\nToken: ${tokenPreview}`);
 
     try {
       const result = await saveSession({}).unwrap();
