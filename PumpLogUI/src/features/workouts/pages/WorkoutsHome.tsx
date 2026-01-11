@@ -44,7 +44,9 @@ export const WorkoutsHome = () => {
     // Debug: Zeige Token und URL
     const hasToken = !!userSession?.accessToken;
     const tokenPreview = userSession?.accessToken?.substring(0, 20) + "...";
-    alert(`API URL: ${API_BASE_URL}\nToken vorhanden: ${hasToken}\nToken: ${tokenPreview}`);
+    alert(
+      `API URL: ${API_BASE_URL}\nToken vorhanden: ${hasToken}\nToken: ${tokenPreview}`
+    );
 
     try {
       const result = await saveSession({}).unwrap();
