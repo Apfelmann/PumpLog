@@ -8,11 +8,13 @@ import {
   useGetSessionsQuery,
   useSaveSessionMutation,
 } from "../../../services/sessionApi";
+import { usePumpLogSelector } from "../../../store/storehooks";
 
 export const WorkoutsHome = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modal, setModal] = useState<RepsModalState>({ open: false });
   const [saveSession] = useSaveSessionMutation();
+  const userSession = usePumpLogSelector((state) => state.user.session);
 
   const { data: sessions = [] } = useGetSessionsQuery();
 
@@ -38,6 +40,11 @@ export const WorkoutsHome = () => {
   void _openReps; // TODO: wird später verwendet
 
   const addWorkout = async () => {
+    // Debug: Zeige Token-Status
+    const hasToken = !!userSession?.accessToken;
+    const tokenPreview = userSession?.accessToken?.substring(0, 20) + "...";
+    alert(`Token vorhanden: ${hasToken}\nToken: ${tokenPreview}`);
+
     try {
       const result = await saveSession({}).unwrap();
       console.log("Session saved:", result);
