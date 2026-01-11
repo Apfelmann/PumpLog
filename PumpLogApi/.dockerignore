@@ -1,9 +1,0 @@
-bin
-obj
-.git
-.gitignore
-*.md
-.vscode
-*.http
-*.sln
-appsettings.Development.json

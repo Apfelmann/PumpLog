@@ -60,10 +60,18 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 app.UseCors("AllowEverything");
+
+// Statische Dateien aus wwwroot servieren (Frontend)
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// SPA Fallback: Alle nicht-API Routes → index.html
+app.MapFallbackToFile("index.html");
 
 // Create the migration on application startup
 using (var scope = app.Services.CreateScope())
