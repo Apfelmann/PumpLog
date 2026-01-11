@@ -46,7 +46,7 @@ export const WorkoutsHome = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-zinc-950 via-[#08080c] to-neutral-900 pb-32 text-white">
+    <div className="min-h-[100dvh] bg-gradient-to-b from-zinc-950 via-[#08080c] to-neutral-900 pb-32 text-white ">
       <Header />
       <div className="mx-auto w-full max-w-4xl">
         <main className="px-5 pt-8">
@@ -70,7 +70,8 @@ export const WorkoutsHome = () => {
 
       <Fab
         color="primary"
-        className="!bg-amber-300 !text-black fixed bottom-8 left-200 shadow-2xl"
+        size="medium"
+        className="!bg-amber-300 !text-black fixed bottom-[-5px] left-1/2 -translate-x-1/2 shadow-2xl"
         onClick={addWorkout}
       >
         <AddIcon />
