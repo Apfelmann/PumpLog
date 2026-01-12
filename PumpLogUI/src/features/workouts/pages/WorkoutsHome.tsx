@@ -9,13 +9,13 @@ import {
   useSaveSessionMutation,
 } from "../../../services/sessionApi";
 import { usePumpLogSelector } from "../../../store/storehooks";
-import { API_BASE_URL } from "../../../constants";
 
 export const WorkoutsHome = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modal, setModal] = useState<RepsModalState>({ open: false });
   const [saveSession] = useSaveSessionMutation();
   const userSession = usePumpLogSelector((state) => state.user.session);
+  void userSession; // TODO: wird später verwendet
 
   const { data: sessions = [] } = useGetSessionsQuery();
 
@@ -42,7 +42,7 @@ export const WorkoutsHome = () => {
 
   const addWorkout = async () => {
     try {
-      const result = await saveSession({}).unwrap();
+      await saveSession({}).unwrap();
     } catch (e) {
       alert("Fehler beim Speichern: " + JSON.stringify(e));
     }
