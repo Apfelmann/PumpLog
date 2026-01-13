@@ -18,6 +18,18 @@ interface HypertrophySectionProps {
   onDelete?: () => void;
 }
 
+// Helper function to parse setResults string into Record<number, number>
+const parseSetResults = (setResults: string | undefined): Record<number, number> => {
+  if (!setResults) return {};
+  return setResults.split(",").reduce((acc, val, idx) => {
+    const num = parseInt(val, 10);
+    if (!isNaN(num)) {
+      acc[idx] = num;
+    }
+    return acc;
+  }, {} as Record<number, number>);
+};
+
 export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
   section,
   sessionGuid,
@@ -51,30 +63,12 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
   // Sync mainSetResults when section.setResults changes (e.g., after API update)
   useEffect(() => {
     if (!section?.setResults) return;
-    
-    const newResults = section.setResults.split(",").reduce((acc, val, idx) => {
-      const num = parseInt(val, 10);
-      if (!isNaN(num)) {
-        acc[idx] = num;
-      }
-      return acc;
-    }, {} as Record<number, number>);
-    
-    setMainSetResults(newResults);
+    setMainSetResults(parseSetResults(section.setResults));
   }, [section?.setResults]);
 
   // Results state: { [setIndex]: repsAchieved }
   const [mainSetResults, setMainSetResults] = useState<Record<number, number>>(
-    () => {
-      if (!section?.setResults) return {};
-      return section.setResults.split(",").reduce((acc, val, idx) => {
-        const num = parseInt(val, 10);
-        if (!isNaN(num)) {
-          acc[idx] = num;
-        }
-        return acc;
-      }, {} as Record<number, number>);
-    }
+    () => parseSetResults(section?.setResults)
   );
 
   // Helper function to save setResults to backend
