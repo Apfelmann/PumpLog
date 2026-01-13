@@ -48,6 +48,21 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
     }
   }, [section, exercises]);
 
+  // Sync mainSetResults when section.setResults changes (e.g., after API update)
+  useEffect(() => {
+    if (!section?.setResults) return;
+    
+    const newResults = section.setResults.split(",").reduce((acc, val, idx) => {
+      const num = parseInt(val, 10);
+      if (!isNaN(num)) {
+        acc[idx] = num;
+      }
+      return acc;
+    }, {} as Record<number, number>);
+    
+    setMainSetResults(newResults);
+  }, [section?.setResults]);
+
   // Results state: { [setIndex]: repsAchieved }
   const [mainSetResults, setMainSetResults] = useState<Record<number, number>>(
     () => {
