@@ -4,13 +4,16 @@ import {
   QueryStats,
   Settings,
   FitnessCenter,
+  Logout,
 } from "@mui/icons-material";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { completeLogout } from "../loginPage/loginServices";
 
 // Mobile-only fixed bottom menu bar that overlays content.
 // Kept export name so existing imports keep working.
 export const MobileNavigationBar: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const mobileHeight = 120; // px height of the bottom bar
 
   const navItems = [
@@ -35,6 +38,10 @@ export const MobileNavigationBar: React.FC = () => {
     0,
     navItems.findIndex((n) => location.pathname.startsWith(n.to))
   );
+
+  const handleLogout = () => {
+    completeLogout().finally(() => navigate("/login", { replace: true }));
+  };
 
   return (
     <Paper
@@ -73,6 +80,17 @@ export const MobileNavigationBar: React.FC = () => {
             }}
           />
         ))}
+        <BottomNavigationAction
+          label="Logout"
+          icon={<Logout fontSize="small" />}
+          onClick={handleLogout}
+          sx={{
+            color: "white",
+            "& .MuiSvgIcon-root": { color: "white" },
+            "&:hover": { color: "#ff6b6b" },
+            "&:hover .MuiSvgIcon-root": { color: "#ff6b6b" },
+          }}
+        />
       </BottomNavigation>
     </Paper>
   );

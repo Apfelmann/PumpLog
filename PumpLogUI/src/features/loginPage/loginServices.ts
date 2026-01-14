@@ -27,7 +27,3 @@ export async function completeLogout() {
   await userManager.signoutRedirectCallback();
   store.dispatch(clearSession());
 }
-
-userManager.events.addUserSignedOut(() => {
-  store.dispatch(clearSession());
-});

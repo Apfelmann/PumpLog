@@ -49,6 +49,7 @@ public class PumpLogDbContext : DbContext
                 new BodyPart { BodyPartGuid = Guid.Parse("5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9a0b"), Name = "Schultern" },
                 new BodyPart { BodyPartGuid = Guid.Parse("1c2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f"), Name = "Bizeps" },
                 new BodyPart { BodyPartGuid = Guid.Parse("7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d"), Name = "Trizeps" },
+                new BodyPart { BodyPartGuid = Guid.Parse("2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e"), Name = "Beine" },
                 new BodyPart { BodyPartGuid = Guid.Parse("3e4f5a6b-7c8d-9e0f-1a2b-3c4d5e6f7a8b"), Name = "Beine (Quadrizeps)" },
                 new BodyPart { BodyPartGuid = Guid.Parse("9c0d1e2f-3a4b-5c6d-7e8f-9a0b1c2d3e4f"), Name = "Beine (Beuger)" },
                 new BodyPart { BodyPartGuid = Guid.Parse("5a6b7c8d-9e0f-1a2b-3c4d-5e6f7a8b9c0d"), Name = "Waden" },

@@ -4,11 +4,15 @@ import "./index.css";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
 import App from "./App";
+import { initializeAuth } from "./oidc/oidc";
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>
-  </StrictMode>
-);
+// Auth aus localStorage wiederherstellen bevor die App rendert
+initializeAuth().then(() => {
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </StrictMode>
+  );
+});
