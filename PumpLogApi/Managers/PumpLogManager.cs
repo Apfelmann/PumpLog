@@ -158,6 +158,16 @@ namespace PumpLogApi.Managers
                 .Where(x => x.UserGuid == Guid.Parse(currentUserService.Id) && x.IsDeleted == false && x.IsCompleted == false)
                 .OrderBy(s => s.CreationDate)
                 .ToListAsync();
+            
+            // Ensure sections are ordered by their Order property
+            foreach (var session in activeSessions)
+            {
+                if (session.Sections != null)
+                {
+                    session.Sections = session.Sections.OrderBy(s => s.Order).ToList();
+                }
+            }
+            
             return activeSessions;
         }
 
@@ -449,6 +459,12 @@ namespace PumpLogApi.Managers
 
             _context.Sessions.Add(newSession);
             await _context.SaveChangesAsync();
+
+            // Ensure sections are ordered before returning
+            if (newSession.Sections != null)
+            {
+                newSession.Sections = newSession.Sections.OrderBy(s => s.Order).ToList();
+            }
 
             return newSession;
         }
