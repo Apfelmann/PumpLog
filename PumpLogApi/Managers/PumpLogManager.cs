@@ -107,6 +107,17 @@ namespace PumpLogApi.Managers
 
             if (existingSection == null)
             {
+                // Auto-calculate Order if not provided
+                if (!sectionRequest.Order.HasValue)
+                {
+                    var existingSections = await _context.Sections
+                        .Where(s => s.SessionGuid == sectionRequest.SessionGuid)
+                        .ToListAsync();
+
+                    var maxOrder = existingSections.Any() ? existingSections.Max(s => s.Order) : -1;
+                    sectionRequest.Order = maxOrder + 1;
+                }
+
                 // Create new section
                 var newSection = CreateSectionEntity(sectionRequest, session);
                 _context.Sections.Add(newSection);
@@ -158,7 +169,7 @@ namespace PumpLogApi.Managers
                 .Where(x => x.UserGuid == Guid.Parse(currentUserService.Id) && x.IsDeleted == false && x.IsCompleted == false)
                 .OrderBy(s => s.CreationDate)
                 .ToListAsync();
-            
+
             // Ensure sections are ordered by their Order property
             foreach (var session in activeSessions)
             {
@@ -167,7 +178,7 @@ namespace PumpLogApi.Managers
                     session.Sections = session.Sections.OrderBy(s => s.Order).ToList();
                 }
             }
-            
+
             return activeSessions;
         }
 

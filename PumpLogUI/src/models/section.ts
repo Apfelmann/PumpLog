@@ -11,7 +11,7 @@ export interface Section {
   sessionGuid: string;
   exerciseGuid: string;
   session: Session;
-  order: number;
+  order?: number;
   bodyPartGuid?: string;
   supersetWithNext?: boolean;
   sectionType: "Strength" | "Crossfit" | "Hypertrophy";

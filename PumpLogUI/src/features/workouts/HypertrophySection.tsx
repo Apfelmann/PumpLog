@@ -28,19 +28,19 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
 
   const [isEditing, setIsEditing] = useState(!section);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
-    null
+    null,
   );
   const [weight, setWeight] = useState<number>(section?.weight || 0);
   const [sets, setSets] = useState<number>(section?.sets || 0);
   const [reps, setReps] = useState<number>(section?.reps || 0);
   const [isSuperset, setIsSuperset] = useState(
-    section?.supersetWithNext || false
+    section?.supersetWithNext || false,
   );
 
   useEffect(() => {
     if (section && exercises.length > 0) {
       const found = exercises.find(
-        (e) => e.exerciseGuid === section.exerciseGuid
+        (e) => e.exerciseGuid === section.exerciseGuid,
       );
       if (found) {
         setSelectedExercise(found);
@@ -52,14 +52,17 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
   const [mainSetResults, setMainSetResults] = useState<Record<number, number>>(
     () => {
       if (!section?.setResults) return {};
-      return section.setResults.split(",").reduce((acc, val, idx) => {
-        const num = parseInt(val, 10);
-        if (!isNaN(num)) {
-          acc[idx] = num;
-        }
-        return acc;
-      }, {} as Record<number, number>);
-    }
+      return section.setResults.split(",").reduce(
+        (acc, val, idx) => {
+          const num = parseInt(val, 10);
+          if (!isNaN(num)) {
+            acc[idx] = num;
+          }
+          return acc;
+        },
+        {} as Record<number, number>,
+      );
+    },
   );
 
   // Helper function to save setResults to backend
@@ -95,7 +98,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
 
   // Popover state for adjusting reps
   const [popoverAnchor, setPopoverAnchor] = useState<HTMLDivElement | null>(
-    null
+    null,
   );
   const [activeSet, setActiveSet] = useState<{
     index: number;
@@ -122,7 +125,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
     const sectionData: Omit<HypertrophySection, "session"> = {
       sectionGuid: section?.sectionGuid || undefined,
       sessionGuid: sessionGuid,
-      order: section?.order || 0,
+      order: section?.order,
       sectionType: "Hypertrophy",
       exerciseGuid: selectedExercise.exerciseGuid,
       exerciseName: selectedExercise.name,
@@ -140,7 +143,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
   const handleSetClick = (
     e: React.MouseEvent<HTMLDivElement>,
     index: number,
-    targetReps: number
+    targetReps: number,
   ) => {
     const val = mainSetResults[index];
 
@@ -183,7 +186,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
   const renderSetBubbles = (
     count: number,
     results: Record<number, number>,
-    targetReps: number
+    targetReps: number,
   ) => {
     return Array.from({ length: count }).map((_, idx) => {
       const actualReps = results[idx];
@@ -231,6 +234,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
           <Typography variant="h6" className="text-amber-300 font-semibold">
             {section ? section.exerciseName : "Neue Übung"}
           </Typography>
+          {section?.order}
           {isSuperset && (
             <span className="text-xs font-bold bg-amber-300/10 text-amber-300 px-2 py-0.5 rounded border border-amber-300/20">
               Supersatz
