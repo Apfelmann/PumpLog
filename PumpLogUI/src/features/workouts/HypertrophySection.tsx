@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Typography, IconButton, Button, Popover } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
-import RemoveIcon from "@mui/icons-material/Remove";
 import CheckIcon from "@mui/icons-material/Check";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import LinkIcon from "@mui/icons-material/Link";
@@ -104,6 +102,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
     index: number;
     targetReps: number;
   } | null>(null);
+  const [repsInputValue, setRepsInputValue] = useState<string>("");
 
   const handleSave = () => {
     if (!selectedExercise || !onSave) return;
@@ -154,17 +153,32 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
       saveSetResults(newResults);
     } else {
       // Already has value: open popover to adjust
+      setRepsInputValue(val.toString());
       setPopoverAnchor(e.currentTarget);
       setActiveSet({ index, targetReps });
     }
   };
 
-  const handleAdjustReps = (delta: number) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setRepsInputValue(raw);
+    const num = parseInt(raw, 10);
+    const validNum = !isNaN(num) && num >= 0 ? num : 0;
+    if (activeSet) {
+      setMainSetResults({ ...mainSetResults, [activeSet.index]: validNum });
+    }
+  };
+
+  const handleMarkAsDone = () => {
     if (!activeSet) return;
-    const { index, targetReps } = activeSet;
-    const currentVal = mainSetResults[index] || 0;
-    const newVal = Math.max(0, Math.min(targetReps, currentVal + delta));
-    setMainSetResults({ ...mainSetResults, [index]: newVal });
+    const newResults = {
+      ...mainSetResults,
+      [activeSet.index]: activeSet.targetReps,
+    };
+    setMainSetResults(newResults);
+    setRepsInputValue(activeSet.targetReps.toString());
+    saveSetResults(newResults);
+    setPopoverAnchor(null);
   };
 
   const handleResetSet = () => {
@@ -361,7 +375,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
         }}
       >
         {activeSet && (
-          <div className="flex flex-col gap-3 min-w-[140px]">
+          <div className="flex flex-col gap-3 min-w-[180px]">
             <div className="flex justify-between items-center border-b border-white/10 pb-2">
               <Typography className="text-xs text-white/50 uppercase tracking-wider font-medium">
                 Satz {activeSet.index + 1}
@@ -375,24 +389,24 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
               </IconButton>
             </div>
 
-            <div className="flex items-center justify-between gap-3">
-              <IconButton
-                onClick={() => handleAdjustReps(-1)}
-                className="!bg-white/5 hover:!bg-white/10 !text-white !border !border-white/10 !w-8 !h-8"
+            <div className="flex flex-col gap-2">
+              <input
+                type="number"
+                min={0}
+                value={repsInputValue}
+                onChange={handleInputChange}
+                aria-label="Anzahl geschaffter Wiederholungen"
+                className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-white text-xl font-bold font-mono text-center focus:outline-none focus:border-amber-300/50"
+                autoFocus
+              />
+              <Button
+                variant="contained"
+                size="small"
+                onClick={handleMarkAsDone}
+                className="!bg-amber-300 !text-black hover:!bg-amber-400 !font-semibold"
               >
-                <RemoveIcon fontSize="small" />
-              </IconButton>
-
-              <Typography className="text-xl font-bold font-mono w-8 text-center">
-                {mainSetResults[activeSet.index]}
-              </Typography>
-
-              <IconButton
-                onClick={() => handleAdjustReps(1)}
-                className="!bg-white/5 hover:!bg-white/10 !text-white !border !border-white/10 !w-8 !h-8"
-              >
-                <AddIcon fontSize="small" />
-              </IconButton>
+                Geschafft ({activeSet.targetReps})
+              </Button>
             </div>
           </div>
         )}
