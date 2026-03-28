@@ -102,7 +102,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
     index: number;
     targetReps: number;
   } | null>(null);
-  const [popoverInputValue, setPopoverInputValue] = useState<string>("");
+  const [repsInputValue, setRepsInputValue] = useState<string>("");
 
   const handleSave = () => {
     if (!selectedExercise || !onSave) return;
@@ -153,7 +153,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
       saveSetResults(newResults);
     } else {
       // Already has value: open popover to adjust
-      setPopoverInputValue(val.toString());
+      setRepsInputValue(val.toString());
       setPopoverAnchor(e.currentTarget);
       setActiveSet({ index, targetReps });
     }
@@ -161,7 +161,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
-    setPopoverInputValue(raw);
+    setRepsInputValue(raw);
     const num = parseInt(raw, 10);
     const validNum = !isNaN(num) && num >= 0 ? num : 0;
     if (activeSet) {
@@ -176,7 +176,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
       [activeSet.index]: activeSet.targetReps,
     };
     setMainSetResults(newResults);
-    setPopoverInputValue(activeSet.targetReps.toString());
+    setRepsInputValue(activeSet.targetReps.toString());
     saveSetResults(newResults);
     setPopoverAnchor(null);
   };
@@ -393,7 +393,7 @@ export const HypertrophySectionCard: React.FC<HypertrophySectionProps> = ({
               <input
                 type="number"
                 min={0}
-                value={popoverInputValue}
+                value={repsInputValue}
                 onChange={handleInputChange}
                 aria-label="Anzahl geschaffter Wiederholungen"
                 className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-white text-xl font-bold font-mono text-center focus:outline-none focus:border-amber-300/50"
