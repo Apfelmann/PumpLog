@@ -4,6 +4,8 @@ import { LogoutPage } from "./routing/LogoutPage";
 import { ProtectedRoute } from "./routing/ProtectedRoute";
 import { LoginPage } from "./features/loginPage/LoginPage";
 import { MobileMainContainer } from "./features/MainContainer";
+import { DesktopMainContainer } from "./features/desktop/layout/DesktopMainContainer";
+import { DesktopWorkoutsPage } from "./features/desktop/pages/workouts/DesktopWorkoutsPage";
 import { useTheme } from "@mui/material/styles";
 import { useMediaQuery } from "@mui/material";
 import { Suspense } from "react";
@@ -36,10 +38,23 @@ export default function App() {
   );
   const desktopRoute = (
     <Route element={<ProtectedRoute />}>
-      <Route
-        path="/app"
-        element={<div>not mobile under construction</div>}
-      ></Route>
+      <Route path="/app" element={<DesktopMainContainer />}>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route
+          path="dashboard"
+          element={
+            <Suspense
+              fallback={
+                <div className="p-8 text-white">Workouts laden ...</div>
+              }
+            >
+              <DesktopWorkoutsPage />
+            </Suspense>
+          }
+        />
+        <Route path="analytics" element={<div className="p-8 text-white/60">Auswertung – coming soon</div>} />
+        <Route path="settings" element={<div className="p-8 text-white/60">Einstellungen – coming soon</div>} />
+      </Route>
     </Route>
   );
 
